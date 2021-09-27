@@ -10,7 +10,7 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-//  res.send("Hello!");
+  //  res.send("Hello!");
   const templateVars = { greeting: 'Hello World!' };
   res.render("hello_world", templateVars);
 
@@ -31,5 +31,20 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
+//  console.log(templateVars)
   res.render("urls_index", templateVars);
+});
+
+
+
+app.get("/urls/:shortURL", (req, res) => {
+  //parse anything after : 
+  const shortURL = req.params.shortURL
+
+  const templateVars = {
+     shortURL: shortURL,
+     longURL: urlDatabase[shortURL]
+    };
+  //console.log(templateVars)
+  res.render("urls_show", templateVars);
 });
