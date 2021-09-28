@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const generateRandomString = (length) => {
   let shortURL = '';
-  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$^()-+][><~=';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$^()-+][><~=';
   let charLength = characters.length
   for (i = 0; i < length; i++) {
 
@@ -48,6 +48,9 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+
+let oldKey = ''
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -120,40 +123,42 @@ app.get("/urls/:shortURL", (req, res) => {
 
   const templateVars = {
     shortURL: shortURL,
-    longURL: urlDatabase[shortURL]
+    longURL: urlDatabase[shortURL],
+    errCode : 200
   };
 
+  
   console.log(templateVars)
+  oldKey = shortURL;
 
-    res.render("urls_show", templateVars);
+  res.render("urls_show", templateVars);
 });
+
 
 const getKeyByValue = (object, value) => {
   return Object.keys(object).find(key => object[key] === value);
 }
 
-
 //retrieve user input 
 app.post("/edit", (req, res) => {
-  //const x = document.getElementsByClassName('card-title')
-  const x = rootElement.getElementsByClassName('card-title');
 
-  console.log(x)
+  const newURL = req.body.newURL
+  
+  console.log('oldKey:', oldKey, "new:", newURL)
 
-  const oldURL = req.body
-
-  const longURL = req.body.newURL
-  console.log(oldURL, longURL)
-
-  const shortURL = getKeyByValue(urlDatabase, oldURL)  
-  return
-  if (!validateURL(longURL)) {
-    errCode = 406
-    console.log({ errCode })
-    // res.render('urls_show', { errCode })
+  if (!validateURL(newURL)) {
+    const templateVars = {
+      shortURL: oldKey,
+      longURL: urlDatabase[oldKey],
+      errCode : 406
+    };
+  
+    console.log(templateVars)
+    res.render("urls_show", templateVars);
     return
   }
-  urlDatabase[shortURL] = longURL
+
+  urlDatabase[oldKey] = newURL
   res.redirect("/")
 
 })
