@@ -13,14 +13,14 @@
   <!-- locals objects stores all parameters specific to the view
     need to stringify before we can see the parameters   -->
 
-  <!-- <%# JSON.stringify(locals)   %>   -->
+  <!-- <%# JSON.stringify(locals)   %>    -->
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
       <h5 class="card-title">TinyURL for: <%= longURL %>
       </h5>
-      <p class="card-text">Short URL: <a href="/urls/"><%= shortURL %>
-        </a></p>
+      <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %> </a>
+        </a></p> 
     </div>
     <div class="card-footer text-muted"></div>
   </div>

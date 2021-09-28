@@ -8,7 +8,7 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <%- include('partials/_header') %>
+  <%- include('partials/_header') %>
     <title>TinyApp</title>
 </head>
 
@@ -23,16 +23,17 @@
         </tr>
       </thead>
       <tbody>
-        <% for(let url in urls) { %>
-          <tr>
-            <td>
-              <a href=/urls/<%= url %>><%= url %></a>   
-            </td>
-            <td>
-              <%= urls[url] %>
-            </td>
-          </tr>
-          <% } %>
+         <%# JSON.stringify(locals) %> 
+          <% for(let url in urls) { %>
+            <tr>
+              <td>
+                <a href="/urls/<%=url %>"> <%= url %></a>
+              </td>
+              <td>
+                <%= urls[url] %>
+              </td>
+            </tr>
+            <% } %>
       </tbody>
     </table>
   </main>

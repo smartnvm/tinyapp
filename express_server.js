@@ -32,7 +32,7 @@ const urlDatabase = {
 
 app.get("/", (req, res) => {
   //  res.send("Hello!");
-  const templateVars = { greeting: 'Hello World!' };
+  const templateVars = { greeting: 'Hello World - Kanisha is awesome!' };
   res.render("hello_world", templateVars);
 
 });
@@ -50,9 +50,10 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//main app view "urls_index"
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
-  console.log(templateVars)
+  //console.log(templateVars)
   res.render("urls_index", templateVars);
 });
 
@@ -62,7 +63,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-
+//show uRL card view "urls_show"
 app.get("/urls/:shortURL", (req, res) => {
   //parse anything after : 
   const shortURL = req.params.shortURL
@@ -75,20 +76,19 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-
-app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-
-
+//retrieve user input 
+app.post("/submit", (req, res) => {
   const longURL = req.body.longURL
   const shortURL = generateRandomString(6)
-  
   urlDatabase[shortURL] = longURL
-
-  console.log(urlDatabase)
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  res.redirect('/urls');
 });
 
 
-
+//found
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL
+  const longURL = urlDatabase[shortURL]
+  res.redirect(longURL);
+});
 
