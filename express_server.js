@@ -50,8 +50,6 @@ const urlDatabase = {
 };
 
 
-let oldKey = ''
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -85,7 +83,7 @@ app.get("/u/:shortURL", (req, res) => {
 })
 
 //retrieve user input 
-app.post("/submit", (req, res) => {
+app.post("/urls", (req, res) => {
   const longURL = req.body.longURL
   console.log(req.body)
   //return
@@ -140,10 +138,11 @@ const getKeyByValue = (object, value) => {
 }
 
 //retrieve user input 
-app.post("/edit", (req, res) => {
+app.post("/urls/:shortURL", (req, res) => {
 
   const newURL = req.body.newURL
-  
+  const oldKey = req.params.shortURL
+
   console.log('oldKey:', oldKey, "new:", newURL)
 
   if (!validateURL(newURL)) {

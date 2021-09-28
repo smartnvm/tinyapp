@@ -26,8 +26,7 @@
       
         <h3 class="card-title"><b><p></p>Edit </b></h3>
         <div class="row justify-content-center">
-
-        <form class="form-inline" action="/edit" method="POST">
+        <form class="form-inline" action="/urls/<%= shortURL %>?<% longURL %>" method="POST">
           <div class="form-group mb-4">
             <label for="longURL">Enter New URL:</label>
             <input class="form-control" type="text" name="newURL" placeholder="http://"
