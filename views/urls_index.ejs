@@ -20,19 +20,40 @@
         <tr>
           <th scope="col">Short URL</th>
           <th scope="col">Long URL</th>
+          <th scope="col">Edit </th>
+          <th scope="col">Delete </th>
+
         </tr>
       </thead>
       <tbody>
-         <%# JSON.stringify(locals) %> 
+        <%# JSON.stringify(locals) %>
           <% for(let url in urls) { %>
             <tr>
               <td>
-                <a href="/urls/<%=url %>"> <%= url %></a>
+                <a href="/urls/<%=url %>">
+                  <%= url %>
+                </a>
               </td>
               <td>
                 <%= urls[url] %>
               </td>
+
+              <td>
+                <form class="form-inline" action="/urls/<%= url %>" method="GET">
+                  <div class="form-group mb-2"><button type="submit" class="btn btn-outline-primary">Edit</button>
+                  </div>
+                </form>
+
+              </td>
+              <td>
+                <form class="form-inline" action="/urls/<%=url %>/delete" method="POST">
+                  <div class="form-group mb-2"><button type="submit" class="btn btn-outline-danger">DELETE</button>
+                  </div>
+                </form>
+
+              </td>
             </tr>
+
             <% } %>
       </tbody>
     </table>
