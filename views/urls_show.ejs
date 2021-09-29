@@ -5,8 +5,8 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>URL - TinyApp Example</title>
   <%- include('partials/_header') %>
+    <title>URL - TinyApp Example</title>
 </head>
 
 <body>
@@ -23,9 +23,9 @@
             </a></b></a></p>
       </div>
       <div class="card text-center"></div>
-      
-        <h3 class="card-title"><b><p></p>Edit </b></h3>
-        <div class="row justify-content-center">
+
+      <h3 class="card-title"><b><p></p>Edit</b></h3>
+      <div class="row justify-content-center">
         <form class="form-inline" action="/urls/<%= shortURL %>?<% longURL %>" method="POST">
           <div class="form-group mb-4">
             <label for="longURL">Enter New URL:</label>
@@ -35,21 +35,16 @@
           </div>
         </form>
       </div>
-      <!--    <p class="card-text">Short URL: <a href="/u/<#= shortURL %>"><#= shortURL %> </a> -->
-
+      <%# JSON.stringify(locals) %>
     </div>
-    
+
     <script type="text/javascript">
       const err = <%= errCode %>
-      if  (err === 406) {
+      if (err === 406) {
         alert(`Error ${err}: Invalid URL format!`);
-       }
+      }
+    </script>
 
-      // alert(`Success!  has been added`);
-   
-
-      </script>
-    
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
@@ -61,4 +56,5 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"></script>
 </body>
-</htm
+</html>
+
