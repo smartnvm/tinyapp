@@ -29,7 +29,10 @@
     <script type="text/javascript">
       const err = <%= errCode %>
       if  (err === 406) {
-        alert(`Error ${err}: Invalid URL format!`);
+        alert(`Error ${err}: Invalid URL format!\n Please try again!`);
+      } else if (err == 410) {
+        alert(`Error ${err}: URL already exists!\n Please try a differnt URL`);
+        
       }
 
       // alert(`Success!  has been added`);
