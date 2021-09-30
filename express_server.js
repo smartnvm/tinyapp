@@ -12,7 +12,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookies = require("cookie-parser");
 app.use(cookies());
 
+const { v4: uuidv4 } = require('uuid');
+
 const { generateRandomString, validateURL, getKeyByValue } = require('./src/appFn')
+
+
+const usersdB = {
+  "userRandomID": {
+    id: "userRandomID",
+    name: 'name1',
+    email: "ajsmartnvxm",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    name: 'name2',
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
+
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -26,26 +46,35 @@ app.listen(PORT, () => {
 
 
 app.get("/", (req, res) => {
-  res.redirect('urls')
+  res.redirect('/login')
 });
 
 
 //main app view "urls_index"
 app.get("/urls", (req, res) => {
+  //fetch current user_id from cookie
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
+
+  if (!user) {
+
+    res.redirect("/login")
+    return
+  }
+
   const templateVars = {
-    errCode: 300,
-    username: req.cookies["username"],
+    statusCode: 200,
+    user: user,
     urls: urlDatabase
   };
-  console.log(templateVars)
   res.render("urls_index", templateVars);
 });
 
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    errCode: 200,
-    username: req.cookies["username"],
+    statusCode: 200,
+    user: usersdB[req.cookies["user_id"]],
     urls: urlDatabase
   }
 
@@ -61,21 +90,19 @@ app.get("/u/:shortURL", (req, res) => {
 
 //retrieve user input 
 app.post("/urls", (req, res) => {
-  
-  username = req.cookies["username"]
-  
-  const longURL = req.body.longURL
-  console.log(req.body)
 
+  username = req.cookies["user_id"]
+
+  const longURL = req.body.longURL
   const urlExist = getKeyByValue(urlDatabase, longURL)
 
   if (urlExist) {
     const templateVars = {
-      errCode: 410,
+      statusCode: 410,
       username: username,
       urls: urlDatabase
     }
-    //console.log({ errCode })
+  
     res.render('urls_new', templateVars)
     return
 
@@ -84,11 +111,11 @@ app.post("/urls", (req, res) => {
   //return
   if (!validateURL(longURL)) {
     const templateVars = {
-      errCode: 406,
+      statusCode: 406,
       username: username,
       urls: urlDatabase
     }
-    //console.log({ errCode })
+    
     res.render('urls_new', templateVars)
     return
   }
@@ -98,61 +125,19 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = longURL
 
   const templateVars = {
-    errCode: 200,
+    statusCode: 200,
     username: username,
     urls: urlDatabase
   };
   res.render("urls_index", templateVars)
 });
 
-app.post("/login", (req, res) => {
-
-  const username = req.body.username
-
-  if (username.length < 6) {
-    const templateVars = {
-      errCode: 400,
-      urls: urlDatabase,
-      username: undefined
-    }
-    console.log({ templateVars })
-    res.render('urls_index', templateVars)
-    return
-  }
-
-  res.cookie('username', username)
-
-  const templateVars = {
-    errCode: 200,
-    urls: urlDatabase,
-    username: username
-  }
-
-  console.log(templateVars)
-  res.render("urls_index", templateVars);
-  return
-
-  // res.redirect("/")
-  return
-})
-
-app.post("/logout", (req, res) => {
-  res.clearCookie("username", req.body.username);
-  const templateVars = {
-    errCode: 200,
-    username: undefined, //req.cookies["username"]
-    urls: urlDatabase
-  }
-
-  res.render("urls_index", templateVars);
-  return
-})
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL
   delete urlDatabase[shortURL]
-  res.redirect("/")
+  res.redirect("/urls")
 
 });
 
@@ -170,11 +155,10 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabase[shortURL],
-    errCode: 200,
-    username: req.cookies["username"]
+    statusCode: 200,
+    username: req.cookies["user_id"]
   };
 
-  console.log(templateVars)
 
   res.render("urls_show", templateVars);
 });
@@ -188,36 +172,154 @@ app.post("/urls/:shortURL", (req, res) => {
   const newURL = req.body.newURL
   const oldKey = req.params.shortURL
 
-  console.log('oldKey:', oldKey, "new:", newURL)
   oldKey
   if (!validateURL(newURL)) {
     const templateVars = {
       shortURL: oldKey,
       longURL: urlDatabase[oldKey],
-      errCode: 406,
-      username: req.cookies["username"]
+      statusCode: 406,
+      username: req.cookies["user_id"]
     };
 
-    console.log(templateVars)
     res.render("urls_show", templateVars);
     return
   }
 
   urlDatabase[oldKey] = newURL
-  res.redirect("/")
+  res.redirect("/urls")
 
 })
 
 
 
-//main app view "urls_index"
-app.get("/:random", (req, res) => {
 
+const findUserByEmail = (email, users) => {
+  for (let userId in users) {
+    const user = users[userId]
+    if (email === user.email) return user
+  }
+  return false
+}
+
+
+const authenticateUser = (email, password, users) => {
+  const user = findUserByEmail(email, users)
+  if (user && user.password === password) {
+    return user
+  }
+  return false
+}
+
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id", req.body.username);
   const templateVars = {
-    errCode: 404,
-    username: req.cookies["username"]
+    statusCode: 200,
+    user: undefined, //req.cookies["user_id"]
+    urls: urlDatabase
   }
 
-  console.log(templateVars)
-  res.render("err_page", templateVars);
+  res.redirect("/login")//, templateVars);
+  return
 })
+
+//login view 
+app.get("/login", (req, res) => {
+  const templateVars = { user: null, statusCode: 200 }
+  res.render('login', templateVars)
+})
+
+//login view 
+app.post("/login", (req, res) => {
+
+  const username = req.body.username
+  const password = req.body.password
+
+  user = findUserByEmail(username, usersdB)
+  authStatus = authenticateUser(user.email, password, usersdB)
+  
+  const templateVars = {
+    user: user,
+    statusCode:200,
+    urls: urlDatabase
+  }
+
+
+  if (user && authStatus) {
+    //create cookie with user name
+    res.cookie('user_id', user.id)
+    res.render("urls_index", templateVars)
+    templateVars.user = user
+    return
+  } else if (user && !authStatus) {
+    templateVars.statusCode = 403
+    res.render('login', templateVars)
+    return
+
+  } else if (!user && username.length > 0) {
+    templateVars.statusCode = 400 
+    res.render('login', templateVars)
+    return
+
+  } 
+  
+  templateVars.statusCode = 410
+  res.render('login', templateVars)
+  return
+
+})
+
+
+app.get("/register", (req, res) => {
+  const templateVars = { user: null, statusCode: 200 }
+  res.render("register", templateVars)
+
+})
+
+
+//regoster view "
+app.post("/register", (req, res) => {
+  const { name, email, password } = req.body
+  const user = findUserByEmail(email, usersdB)
+
+  const templateVars = {
+    statusCode: 200,
+    user: user
+  };
+
+
+  if (user) {
+    templateVars.statusCode = 410;
+    res.render("register", templateVars)
+    return
+  } else if ((email.length === 0) || (password.length === 0)) {
+    templateVars.statusCode = 400;
+    res.render("register", templateVars)
+    return
+  }
+
+  const userId = uuidv4().substring(0, 6)
+  
+  newUser = { id: userId, name, email, password }
+  usersdB[userId] = newUser
+
+  //log the user => ask the browser to store in cookie
+  res.cookie('user_id', userId)
+  res.redirect("/urls")
+
+})
+
+
+
+
+// //main app view "urls_index"
+// app.get("/:random", (req, res) => {
+
+//   const templateVars = {
+//     statusCode: 404,
+//     username: req.cookies['user_id']
+//   }
+
+//   console.log(templateVars)
+//   res.render("err_page", templateVars);
+// })

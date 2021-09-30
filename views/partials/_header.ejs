@@ -9,31 +9,36 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
 
-        <a class="nav-item nav-link" href="/urls/">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <% if (user && statusCode === 200) { %>
+          <a class="nav-item nav-link" href="/urls/">My URLs</a>
+          <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+          <% } %>
 
       </div class="container float-right">
 
     </div>
-    
-    <div>    
 
-      <% if (username !== undefined) { %>
-        <form method="POST" action="/logout">
-          <h2 class="navbar-brand">Hello, <%= username %>
+      <% if (user && statusCode === 200) { %>
+        <div>
+          <form method="POST" action="/logout">
+          <h2 class="navbar-brand">Hello, <%= user.name %>
           </h2>
           <button type="submit" class="btn btn-light">Logout</button>
         </form>
-        
-        <% } else  { %>
-          
-          <form class="form-inline" action="/login" method="POST">
-            <input class="form-control" type="text" name="username" placeholder="Username"
-            style="width: 300px; margin: 5pt">
-            <button type="submit" class="btn btn-outline-dark">Login</button>
+      </div>
+
+        <% } else { %>
+
+          <form class="form-inline" action="/register" method="GET">
+            <button type="submit" class="btn btn-outline-light">Register</button>
+          </form>
+          <pre> | </pre>
+          <form class="form-inline" action="/login" method="GET">
+            <button type="submit" class="btn btn-outline-light">Login</button>
           </form>
           <% } %>
-        </div>
-        
-      </nav>
+    
+  </nav>
+   <%# JSON.stringify(locals)   %>   
+ 
 </header>

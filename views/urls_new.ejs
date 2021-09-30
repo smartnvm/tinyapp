@@ -27,7 +27,7 @@
     <%# JSON.stringify(locals) %> 
 
     <script type="text/javascript">
-      const err = <%= errCode %>
+      const err = <%= statusCode %>
       if  (err === 406) {
         alert(`Error ${err}: Invalid URL format!\n Please try again!`);
       } else if (err == 410) {

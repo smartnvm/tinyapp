@@ -1,0 +1,9 @@
+ <% if (<%=statusCode %> === 406) { %>
+      alert(`Error <%= statusCode %>: Invalid URL format!\n Please try again!`);
+
+        </form>
+        <% } else if (<%=statusCode %> === 410) { %>
+
+          alert(`Error <%= statusCode %>: URL already exists!\n Please try a differnt URL`);
+
+            <% } %>
