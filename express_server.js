@@ -35,25 +35,6 @@ const usersdB = {
 }
 
 
-
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
-// const urlDatabase = {
-//   b6UTxQ: {
-//       longURL: "https://www.tsn.ca",
-//       userID: "aJ48lW"
-//   },
-//   i3BoGr: {
-//       longURL: "https://www.google.ca",
-//       userID: "aJ48lW"
-//   }
-// };
-
-
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -79,7 +60,7 @@ app.get("/urls", (req, res) => {
     statusCode: 200,
     user: user
   };
-  console.log('user URLs',user.urls, '\n-------------\n', 'URL dB',urlDatabase)
+  console.log('user URLs', '\n-------------\n',user.urls)
   
   res.render("urls_index", templateVars);
 });
@@ -107,7 +88,7 @@ app.get("/urls/new", (req, res) => {
 //found
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL
-  const longURL = urlDatabase[shortURL]
+  const longURL = user.urls[shortURL]
   res.redirect(longURL);
 })
 
@@ -124,9 +105,8 @@ app.post("/urls", (req, res) => {
 
   const longURL = req.body.longURL
 
-  let tinyURL = getKeyByValue(urlDatabase, longURL)
-  let urlExist = user.urls.hasOwnProperty(tinyURL)
-
+  let urlExist = getKeyByValue(user.urls, longURL)
+  
   
   const templateVars = {
     statusCode: 200,
@@ -146,7 +126,7 @@ app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString(6)
   user.urls[shortURL] = longURL
-  urlDatabase[shortURL] = longURL
+  
   res.render("urls_index", templateVars)
 });
 
@@ -159,7 +139,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const user = usersdB[userId]
 
 
-  //delete urlDatabase[shortURL]
+  
   delete user.urls[shortURL]
   res.redirect("/urls")
 
@@ -170,16 +150,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   //parse anything after : 
   const shortURL = req.params.shortURL
+const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
 
-  if (!urlDatabase[shortURL]) {
+  if (!user.urls[shortURL]) {
     res.redirect('/404')
     return
   }
 
 
-  const userId = req.cookies["user_id"]
-  const user = usersdB[userId]
-
+  
   const templateVars = {
     statusCode: 200,
     errCode: 200,
@@ -217,7 +197,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 
 
-  urlDatabase[shortURL] = newURL
+  
   user.urls[shortURL] = newURL
 
   res.redirect("/urls")
