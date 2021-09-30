@@ -159,7 +159,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const user = usersdB[userId]
 
 
-  delete urlDatabase[shortURL]
+  //delete urlDatabase[shortURL]
   delete user.urls[shortURL]
   res.redirect("/urls")
 
