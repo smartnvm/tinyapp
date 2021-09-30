@@ -12,6 +12,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookies = require("cookie-parser");
 app.use(cookies());
 
+app.use( express.static( "src" ) );
+
+
 const { v4: uuidv4 } = require('uuid');
 
 const { generateRandomString, validateURL, getKeyByValue } = require('./src/appFn')
