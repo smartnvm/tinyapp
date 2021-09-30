@@ -38,12 +38,13 @@
       <%# JSON.stringify(locals) %>
     </div>
 
+  
     <script type="text/javascript">
-      const err = <%= statusCode %>
-      if (err === 406) {
+      const err = <%= errCode %>
+      if  (err === 406) {
         alert(`Error ${err}: Invalid URL format!`);
-      }
-    </script>
+     }
+      </script>
 
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

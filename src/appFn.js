@@ -1,7 +1,7 @@
 
 const generateRandomString = (length) => {
   let shortURL = '';
-  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$^()-+][><~=';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let charLength = characters.length
   for (i = 0; i < length; i++) {
 

@@ -22,13 +22,15 @@ const usersdB = {
     id: "userRandomID",
     name: 'name1',
     email: "ajsmartnvxm",
-    password: "purple-monkey-dinosaur"
+    password: "purple-monkey-dinosaur",
+    urls: {}
   },
   "user2RandomID": {
     id: "user2RandomID",
     name: 'name2',
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: "dishwasher-funk",
+    urls: {}
   }
 }
 
@@ -39,6 +41,18 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// const urlDatabase = {
+//   b6UTxQ: {
+//       longURL: "https://www.tsn.ca",
+//       userID: "aJ48lW"
+//   },
+//   i3BoGr: {
+//       longURL: "https://www.google.ca",
+//       userID: "aJ48lW"
+//   }
+// };
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -46,7 +60,7 @@ app.listen(PORT, () => {
 
 
 app.get("/", (req, res) => {
-  res.redirect('/login')
+  res.redirect('/urls')
 });
 
 
@@ -57,25 +71,34 @@ app.get("/urls", (req, res) => {
   const user = usersdB[userId]
 
   if (!user) {
-
     res.redirect("/login")
     return
   }
 
   const templateVars = {
     statusCode: 200,
-    user: user,
-    urls: urlDatabase
+    user: user
   };
+  console.log('user URLs',user.urls, '\n-------------\n', 'URL dB',urlDatabase)
+  
   res.render("urls_index", templateVars);
 });
 
 
 app.get("/urls/new", (req, res) => {
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
+
+  if (!user) {
+    res.redirect("/login")
+    return
+  }
+
+
   const templateVars = {
     statusCode: 200,
-    user: usersdB[req.cookies["user_id"]],
-    urls: urlDatabase
+    user: user,
+    errCode: 200
   }
 
   res.render('urls_new', templateVars)
@@ -91,44 +114,39 @@ app.get("/u/:shortURL", (req, res) => {
 //retrieve user input 
 app.post("/urls", (req, res) => {
 
-  username = req.cookies["user_id"]
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
 
-  const longURL = req.body.longURL
-  const urlExist = getKeyByValue(urlDatabase, longURL)
-
-  if (urlExist) {
-    const templateVars = {
-      statusCode: 410,
-      username: username,
-      urls: urlDatabase
-    }
-  
-    res.render('urls_new', templateVars)
+  if (!user) {
+    res.redirect("/login")
     return
-
   }
 
-  //return
-  if (!validateURL(longURL)) {
-    const templateVars = {
-      statusCode: 406,
-      username: username,
-      urls: urlDatabase
-    }
-    
+  const longURL = req.body.longURL
+
+  let tinyURL = getKeyByValue(urlDatabase, longURL)
+  let urlExist = user.urls.hasOwnProperty(tinyURL)
+
+  
+  const templateVars = {
+    statusCode: 200,
+    user: user
+  }
+  if (urlExist) {
+    templateVars.errCode = 410,
+      res.render('urls_new', templateVars)
+    return
+
+  } else if (!validateURL(longURL)) {
+    templateVars.errCode = 406
     res.render('urls_new', templateVars)
     return
   }
 
 
   const shortURL = generateRandomString(6)
+  user.urls[shortURL] = longURL
   urlDatabase[shortURL] = longURL
-
-  const templateVars = {
-    statusCode: 200,
-    username: username,
-    urls: urlDatabase
-  };
   res.render("urls_index", templateVars)
 });
 
@@ -136,7 +154,13 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL
+
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
+
+
   delete urlDatabase[shortURL]
+  delete user.urls[shortURL]
   res.redirect("/urls")
 
 });
@@ -152,42 +176,52 @@ app.get("/urls/:shortURL", (req, res) => {
     return
   }
 
+
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
+
   const templateVars = {
-    shortURL: shortURL,
-    longURL: urlDatabase[shortURL],
     statusCode: 200,
-    username: req.cookies["user_id"]
+    errCode: 200,
+    user: user,
+    longURL: user.urls[shortURL],
+    shortURL: shortURL
   };
 
 
   res.render("urls_show", templateVars);
 });
 
-
-
-
 //retrieve user input 
 app.post("/urls/:shortURL", (req, res) => {
 
   const newURL = req.body.newURL
-  const oldKey = req.params.shortURL
+  const shortURL = req.params.shortURL
 
-  oldKey
+
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
+
+  const templateVars = {
+    statusCode: 200,
+    user: user,
+    longURL: user.urls[shortURL],
+    shortURL: shortURL
+  };
+  
   if (!validateURL(newURL)) {
-    const templateVars = {
-      shortURL: oldKey,
-      longURL: urlDatabase[oldKey],
-      statusCode: 406,
-      username: req.cookies["user_id"]
-    };
-
+    templateVars.errCode = 406
     res.render("urls_show", templateVars);
     return
-  }
+  };
 
-  urlDatabase[oldKey] = newURL
+
+
+  urlDatabase[shortURL] = newURL
+  user.urls[shortURL] = newURL
+
   res.redirect("/urls")
-
+  return
 })
 
 
@@ -215,8 +249,8 @@ app.post("/logout", (req, res) => {
   res.clearCookie("user_id", req.body.username);
   const templateVars = {
     statusCode: 200,
-    user: undefined, //req.cookies["user_id"]
-    urls: urlDatabase
+    user: null, //req.cookies["user_id"]
+
   }
 
   res.redirect("/login")//, templateVars);
@@ -237,19 +271,16 @@ app.post("/login", (req, res) => {
 
   user = findUserByEmail(username, usersdB)
   authStatus = authenticateUser(user.email, password, usersdB)
-  
+
   const templateVars = {
     user: user,
-    statusCode:200,
-    urls: urlDatabase
   }
-
 
   if (user && authStatus) {
     //create cookie with user name
     res.cookie('user_id', user.id)
+    templateVars.statusCode = 200
     res.render("urls_index", templateVars)
-    templateVars.user = user
     return
   } else if (user && !authStatus) {
     templateVars.statusCode = 403
@@ -257,12 +288,12 @@ app.post("/login", (req, res) => {
     return
 
   } else if (!user && username.length > 0) {
-    templateVars.statusCode = 400 
+    templateVars.statusCode = 400
     res.render('login', templateVars)
     return
 
-  } 
-  
+  }
+
   templateVars.statusCode = 410
   res.render('login', templateVars)
   return
@@ -299,8 +330,8 @@ app.post("/register", (req, res) => {
   }
 
   const userId = uuidv4().substring(0, 6)
-  
-  newUser = { id: userId, name, email, password }
+  let urls = {}
+  newUser = { id: userId, name, email, password, urls }
   usersdB[userId] = newUser
 
   //log the user => ask the browser to store in cookie
@@ -312,14 +343,15 @@ app.post("/register", (req, res) => {
 
 
 
-// //main app view "urls_index"
-// app.get("/:random", (req, res) => {
+//main app view "urls_index"
+app.get("/404", (req, res) => {
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
 
-//   const templateVars = {
-//     statusCode: 404,
-//     username: req.cookies['user_id']
-//   }
-
-//   console.log(templateVars)
-//   res.render("err_page", templateVars);
-// })
+  const templateVars = {
+    statusCode: 200,
+    errCode: 404,
+    user: user
+  }
+  res.render("err_page", templateVars);
+})
