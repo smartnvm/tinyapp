@@ -12,12 +12,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookies = require("cookie-parser");
 app.use(cookies());
 
-app.use( express.static( "src" ) );
+app.use(express.static("src"));
 
 
 const { v4: uuidv4 } = require('uuid');
 
-const { generateRandomString, validateURL, getKeyByValue } = require('./src/appFn')
+const { generateRandomString, validateURL, getKeyByValue, fetchMyIP } = require('./src/appFn')
 
 
 const usersdB = {
@@ -45,9 +45,9 @@ app.listen(PORT, () => {
 });
 
 
-const varInit = (statusCode, errCode, user, shortURL, longURL) => {
+const varInit = (statusCode, errCode, user, shortURL, longURL, count, date) => {
 
-  const templateVars = { statusCode, errCode, user, shortURL, longURL }
+  const templateVars = { statusCode, errCode, user, shortURL, longURL, count, date }
   return templateVars
 }
 
@@ -66,9 +66,11 @@ app.get("/urls", (req, res) => {
     res.redirect("/login")
     return
   }
-
-  const templateVars = varInit(200, 200, user)
-  console.log('user URLs', user.urls, '\n-------------\n', urlsDatabase)
+  //let parsedCookie = req.cookies[shortURL]
+  //const count = parsedCookie.count
+  //const date = parsedCookie.dateCreated
+  const templateVars = varInit(200, 200, user)//,shortURL,null,count, date)
+  console.log(`${user.name} URLs`, user.urls, '\n-------------\n', urlsDatabase)
   res.render("urls_index", templateVars);
 });
 
@@ -89,8 +91,15 @@ app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL
   const longURL = urlsDatabase[shortURL]
 
+  let parsedCookie = req.cookies[shortURL]
+
+  console.log(parsedCookie)
+
   if (urlsDatabase[shortURL]) {
+    count = parsedCookie.count+1
+    res.cookie([shortURL], { count: count, dateCreated: parsedCookie.dateCreated})
     res.redirect(longURL);
+    return
   }
 
   res.redirect('/404')
@@ -101,6 +110,7 @@ app.post("/urls", (req, res) => {
   const userId = req.cookies["user_id"]
   const user = usersdB[userId]
 
+
   if (!user) {
     res.redirect("/login")
     return
@@ -108,7 +118,7 @@ app.post("/urls", (req, res) => {
 
   const longURL = req.body.longURL
   let urlExist = getKeyByValue(user.urls, longURL)
-  const templateVars = varInit(200, null, user)
+  let templateVars = varInit(200, null, user)
 
   if (urlExist) {
     templateVars.errCode = 410,
@@ -123,6 +133,11 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString(6)
   user.urls[shortURL] = longURL
   urlsDatabase[shortURL] = longURL
+
+  
+  const timestamp = new Date()
+  res.cookie([shortURL], { count: 0, dateCreated: timestamp })
+  templateVars = varInit(200, null, user,shortURL,longURL, 0 , timestamp)
   res.render("urls_index", templateVars)
 });
 

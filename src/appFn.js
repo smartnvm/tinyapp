@@ -1,3 +1,5 @@
+const { get } = require('request');
+const request = require('request')
 
 const generateRandomString = (length) => {
   let shortURL = '';
@@ -37,4 +39,44 @@ const validateURL = (str) => {
 const getKeyByValue = (object, value) => {
   return Object.keys(object).find(key => object[key] === value);
 }
-module.exports = {generateRandomString, validateURL, getKeyByValue}
+
+
+
+const fetchMyIP = function (callback) {
+  // use request to fetch IP address from JSON API
+
+  let domain = 'https://api.ipify.org?format=json';
+
+  request(domain, (error, response, body) => {
+
+    if (error) return callback(`\n ERROR: ${error.message}`, null);
+
+    if (response.statusCode !== 200) {
+      callback(Error(`Status Code ${response.statusCode} when fetching IP: ${body}`), null);
+
+    }
+
+    //you can fetch IP also by response.body
+    const ip = JSON.parse(body).ip;
+    callback(null, ip);
+  });
+
+};
+
+
+
+// const getIP = (callback) => {
+//   fetchMyIP((error, IP) => {
+
+//     if (error) {
+//       return callback(error, null);
+//     }
+//     callback(null, IP)
+//   })
+
+// }
+
+
+// console.log(getIP())
+
+module.exports = { generateRandomString, validateURL, getKeyByValue, fetchMyIP }
