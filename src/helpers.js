@@ -1,6 +1,6 @@
-const bcrypt = require('../node_modules/bcryptjs') // bcryptjs/dist/bcrypt');
+const bcrypt = require('bcryptjs') // bcryptjs/dist/bcrypt');
 
-const { v4: uuidv4 } = require('../node_modules/uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const generateRandomString = (length) => {
   let shortURL = '';
