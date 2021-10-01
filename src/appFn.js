@@ -79,7 +79,7 @@ const fetchMyIP = function (callback) {
 
 // console.log(getIP())
 
-const getTimeStamp = () => {
+const getTimestamp = () => {
   let months = ['Jan', 'Feb', 'Mar', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     now = new Date(),
     formatted = now.getFullYear() + ' ' + months[now.getMonth() - 1] + ' ' + now.getDate() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
@@ -94,5 +94,5 @@ module.exports = {
   validateURL,
   getKeyByValue,
   fetchMyIP,
-  getTimeStamp
+  getTimestamp
 }

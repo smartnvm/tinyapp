@@ -17,7 +17,12 @@ app.use(express.static("src"));
 
 const { v4: uuidv4 } = require('uuid');
 
-const { generateRandomString, validateURL, getKeyByValue, fetchMyIP } = require('./src/appFn')
+const {
+  generateRandomString,
+  validateURL,
+  getKeyByValue,
+  fetchMyIP,
+  getTimestamp } = require('./src/appFn')
 
 
 const usersdB = {
@@ -96,8 +101,8 @@ app.get("/u/:shortURL", (req, res) => {
   console.log(parsedCookie)
 
   if (urlsDatabase[shortURL]) {
-    count = parsedCookie.count+1
-    res.cookie([shortURL], { count: count, dateCreated: parsedCookie.dateCreated})
+    count = parsedCookie.count + 1
+    res.cookie([shortURL], { count: count, dateCreated: parsedCookie.dateCreated })
     res.redirect(longURL);
     return
   }
@@ -134,10 +139,10 @@ app.post("/urls", (req, res) => {
   user.urls[shortURL] = longURL
   urlsDatabase[shortURL] = longURL
 
-  
-  const timestamp = new Date()
-  res.cookie([shortURL], { count: 0, dateCreated: timestamp })
-  templateVars = varInit(200, null, user,shortURL,longURL, 0 , timestamp)
+
+  const timestamp = getTimestamp()
+    res.cookie([shortURL], { count: 0, dateCreated: timestamp })
+  templateVars = varInit(200, null, user, shortURL, longURL, 0, timestamp)
   res.render("urls_index", templateVars)
 });
 
