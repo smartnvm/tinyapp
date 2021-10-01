@@ -9,8 +9,19 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const cookies = require("cookie-parser");
-app.use(cookies());
+const session= require("cookie-session");
+const morgan = require('morgan');
+app.use(morgan('dev'));
+
+app.use(session({
+  name: 'session',
+  keys: ['test'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+
+
 
 app.use(express.static("src"));
 
@@ -25,7 +36,7 @@ const {
   getTimestamp,
   createUser,
   getUserByEmail,
-  authenticateUser } = require('./src/appFn')
+  authenticateUser } = require('./src/helpers')
 
 
 const usersdB = {
@@ -70,23 +81,22 @@ app.get("/urls", (req, res) => {
 
   console.log("urlsDatabase:", urlsDatabase)
 
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
+
   const user = usersdB[userId]
 
   if (!user) {
     res.redirect("/login")
     return
   }
-  //let parsedCookie = req.cookies[shortURL]
-  //const count = parsedCookie.count
-  //const date = parsedCookie.dateCreated
+  
   const templateVars = varInit(200, 200, user)//,shortURL,null,count, date)
   console.log(`${user.name} URLs`, user.urls, '\n-------------\n', urlsDatabase)
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
   const user = usersdB[userId]
 
   if (!user) {
@@ -101,10 +111,11 @@ app.get("/urls/new", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL
   const longURL = urlsDatabase[shortURL]
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
+
   const user = usersdB[userId]
 
-  let parsedCookie = Number(req.cookies[shortURL])
+  let parsedCookie = Number(req.session.shortURL)
   const visitorIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
 
@@ -113,7 +124,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (urlsDatabase[shortURL]) {
     count = Number(parsedCookie) + 1
     user.urls[shortURL].clicks = count
-    res.cookie([shortURL], count)
+    req.session.shortURL = count
     res.redirect(longURL);
     return
   }
@@ -123,7 +134,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
 
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
   const user = usersdB[userId]
 
 
@@ -159,7 +170,7 @@ app.post("/urls", (req, res) => {
   urlsDatabase[shortURL] = longURL
 
   //res.cookie([shortURL], {count: 0, dateCreated: timestamp })
-  res.cookie([shortURL], 0)
+  req.session.shortURL = 0
 
   templateVars = varInit(200, null, user, shortURL, longURL, clicks, timestamp)
   res.render("urls_index", templateVars)
@@ -169,7 +180,7 @@ app.post("/urls", (req, res) => {
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
   const user = usersdB[userId]
 
 
@@ -188,7 +199,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   //parse anything after : 
   const shortURL = req.params.shortURL
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
   const user = usersdB[userId]
 
 
@@ -210,7 +221,7 @@ app.post("/urls/:shortURL", (req, res) => {
   const newURL = req.body.newURL
   const shortURL = req.params.shortURL
 
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
   const user = usersdB[userId]
   let longURL = user.urls[shortURL].longURL
 
@@ -231,8 +242,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id", req.body.username);
-  const templateVars = varInit(200, 200, null)
+  req.session = null;
   res.redirect("/login")
   return
 })
@@ -257,7 +267,7 @@ app.post("/login", (req, res) => {
   let templateVars = varInit(null, null, user)
 
   if (user && authStatus.num === 200) {
-    res.cookie('user_id', user.id)
+    req.session.user_id =  user.id
     templateVars.statusCode = 200
     res.render("urls_index", templateVars)
     return
@@ -299,15 +309,15 @@ app.post("/register", (req, res) => {
 
   console.log(newUser)
   //log the user => ask the browser to store in cookie
-  res.cookie('user_id', newUser.id)
-
+  req.session.user_id =  newUser.id
+  
   res.redirect("/urls")
 
 })
 
 
 app.get("/404", (req, res) => {
-  const userId = req.cookies["user_id"]
+  const userId = req.session.user_id
   const user = usersdB[userId]
   const templateVars = varInit(200, 404, user)
   res.render("err_page", templateVars);
