@@ -21,8 +21,7 @@ const { v4: uuidv4 } = require('uuid');
 const {
   generateRandomString,
   validateURL,
-  getKeyByValue,
-  fetchMyIP,
+  checkUrlExists,
   getTimestamp } = require('./src/appFn')
 
 
@@ -65,6 +64,9 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   //fetch current user_id from cookie
+
+  console.log("urlsDatabase:", urlsDatabase)
+
   const userId = req.cookies["user_id"]
   const user = usersdB[userId]
 
@@ -96,14 +98,19 @@ app.get("/urls/new", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL
   const longURL = urlsDatabase[shortURL]
+  const userId = req.cookies["user_id"]
+  const user = usersdB[userId]
 
-  let parsedCookie = req.cookies[shortURL]
+  let parsedCookie = Number(req.cookies[shortURL])
+  const visitorIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
-  console.log(parsedCookie)
+
+
 
   if (urlsDatabase[shortURL]) {
-    count = parsedCookie.count + 1
-    res.cookie([shortURL], { count: count, dateCreated: parsedCookie.dateCreated })
+    count = Number(parsedCookie) + 1
+    user.urls[shortURL].clicks = count
+    res.cookie([shortURL], count)
     res.redirect(longURL);
     return
   }
@@ -123,8 +130,10 @@ app.post("/urls", (req, res) => {
   }
 
   const longURL = req.body.longURL
-  let urlExist = getKeyByValue(user.urls, longURL)
+
+  const urlExist = checkUrlExists(user.urls, longURL)
   let templateVars = varInit(200, null, user)
+
 
   if (urlExist) {
     templateVars.errCode = 410,
@@ -137,24 +146,37 @@ app.post("/urls", (req, res) => {
   }
 
   const shortURL = generateRandomString(6)
-  user.urls[shortURL] = longURL
+  const timestamp = getTimestamp()
+
+  const clicks = 0
+
+  urlsDatabase[shortURL] = { longURL, timestamp, clicks }
+
+  user.urls[shortURL] = { longURL, timestamp, clicks }
   urlsDatabase[shortURL] = longURL
 
+  //res.cookie([shortURL], {count: 0, dateCreated: timestamp })
+  res.cookie([shortURL], 0)
 
-  const timestamp = getTimestamp()
-    res.cookie([shortURL], { count: 0, dateCreated: timestamp })
-  templateVars = varInit(200, null, user, shortURL, longURL, 0, timestamp)
+  templateVars = varInit(200, null, user, shortURL, longURL, clicks, timestamp)
   res.render("urls_index", templateVars)
+
 });
 
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL
-
   const userId = req.cookies["user_id"]
   const user = usersdB[userId]
+
+
+  if (!user) {
+    res.redirect("/login")
+    return
+  }
+  const shortURL = req.params.shortURL
   delete user.urls[shortURL]
+  delete urlsDatabase[shortURL]
   res.redirect("/urls")
 
 });
@@ -166,12 +188,17 @@ app.get("/urls/:shortURL", (req, res) => {
   const userId = req.cookies["user_id"]
   const user = usersdB[userId]
 
-  if (!user.urls[shortURL]) {
+
+  if (!user) {
+    res.redirect("/login")
+    return
+  } else if (!user.urls[shortURL]) {
     res.redirect('/404')
     return
   }
-
-  const templateVars = varInit(200, 200, user, shortURL, user.urls[shortURL])
+  let longURL = user.urls[shortURL].longURL
+  let clicks = user.urls[shortURL].clicks
+  const templateVars = varInit(200, 200, user, shortURL, longURL, clicks)
   res.render("urls_show", templateVars);
 });
 
@@ -179,45 +206,26 @@ app.post("/urls/:shortURL", (req, res) => {
 
   const newURL = req.body.newURL
   const shortURL = req.params.shortURL
+
   const userId = req.cookies["user_id"]
   const user = usersdB[userId]
+  let longURL = user.urls[shortURL].longURL
 
-  const templateVars = varInit(200, 200, user, shortURL, user.urls[shortURL])
+  const templateVars = varInit(200, 200, user, shortURL, longURL)
 
   if (!validateURL(newURL)) {
     templateVars.errCode = 406
     res.render("urls_show", templateVars);
     return
   };
-  user.urls[shortURL] = newURL
+  longURL = newURL
   urlsDatabase[shortURL] = newURL
+  user.urls[shortURL].longURL = newURL
   res.redirect("/urls")
   return
 })
 
 
-const findUserByEmail = (email, users) => {
-  for (let userId in users) {
-    const user = users[userId]
-    if (email === user.email) return user
-  }
-  return false
-}
-
-const authenticateUser = (email, password, users) => {
-  console.log(email, password)
-  if (password === undefined) return false
-  const user = findUserByEmail(email, users)
-  if (user ) {
-    validatePassword = bcrypt.compareSync(password, user.password)
-    if (validatePassword) {
-
-       return user
-      }
-
-  }
-  return false
-}
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id", req.body.username);
@@ -232,43 +240,38 @@ app.get("/login", (req, res) => {
 })
 
 
+
 app.post("/login", (req, res) => {
-  const username = req.body.username
+  const email = req.body.username
   const password = req.body.password
-  const user = findUserByEmail(username, usersdB)
+  const user = findUserByEmail(email, usersdB)
+  const authStatus = authenticateUser(email, password, user)
 
-  console.log(username, password, user)
-  authStatus = authenticateUser(username,password, usersdB)
+  console.log(password)
 
-  const templateVars = varInit(null, null, user)
+  // authStatus = authenticateUser(user.email, password, usersdB)
+  console.log('-----------login:------', authStatus)
+  let templateVars = varInit(null, null, user)
 
-  if (user && authStatus) {
+  if (user && authStatus.num === 200) {
     res.cookie('user_id', user.id)
     templateVars.statusCode = 200
     res.render("urls_index", templateVars)
     return
-  } else if (user && !authStatus) {
-    templateVars.statusCode = 403
-    res.render('login', templateVars)
-    return
-
-  } else if (!user && username.length > 0) {
-    templateVars.statusCode = 400
-    res.render('login', templateVars)
-    return
-
   }
 
-  templateVars.statusCode = 410
+  const statusCode = authStatus.num
+  console.log(authStatus, statusCode)
+  templateVars = varInit(statusCode, null, user)
   res.render('login', templateVars)
   return
 
 })
 
 
+
 app.get("/register", (req, res) => {
   const templateVars = varInit(200, 200, null)
-
   res.render("register", templateVars)
 
 })
@@ -282,28 +285,23 @@ app.post("/register", (req, res) => {
     templateVars.statusCode = 410;
     res.render("register", templateVars)
     return
-  } else if ((email.length === 0) || (strPassword.length === 0)) {
+  } else if (!email || !strPassword) {
     templateVars.statusCode = 400;
     res.render("register", templateVars)
     return
   }
-  
 
-  password = bcrypt.hashSync(strPassword, 10);
-
-
-  const userId = uuidv4().substring(0, 6)
-  let urls = {}
-  newUser = { id: userId, name, email, password, urls }
-  usersdB[userId] = newUser
+  const newUser = createUser(name, email, strPassword)
+  usersdB[newUser.id] = newUser
 
   console.log(newUser)
   //log the user => ask the browser to store in cookie
-  res.cookie('user_id', userId)
-  
+  res.cookie('user_id', newUser.id)
+
   res.redirect("/urls")
 
 })
+
 
 app.get("/404", (req, res) => {
   const userId = req.cookies["user_id"]
@@ -312,3 +310,53 @@ app.get("/404", (req, res) => {
   res.render("err_page", templateVars);
 })
 
+
+
+const createUser = (name, email, strPassword) => {
+  let password = bcrypt.hashSync(strPassword, 10);
+  const userId = uuidv4().substring(0, 6)
+  let urls = {}
+  user = { id: userId, name, email, password, urls }
+  return user
+}
+
+
+
+const findUserByEmail = (email, users) => {
+  for (let userId in users) {
+    const user = users[userId]
+    if (email === user.email) return user
+  }
+  return false
+}
+
+
+
+const authenticateUser = (email, password, user) => {
+  let authStatus = {}
+  console.log(user)
+
+  console.log(bcrypt.hashSync(password, 10));
+  console.log(user.password)
+  if (user) {
+
+    if (bcrypt.compareSync(password, user.password)) {
+      err = 200 //user
+      errMsg = 'Hello, ' + user.name
+
+    } else {
+      err = 403
+      errMsg = 'Invalid password! Try again'
+    }
+  } else if (!user && email.length > 0) {
+    err = 400
+    errMsg = 'Error user not found!'
+  } else {
+    err = 410
+    errMsg = 'Invalid user name or password!'
+  }
+
+  authStatus.num = err
+  authStatus.errMsg = "❌ Error " + err + '\n' + errMsg
+  return authStatus
+}

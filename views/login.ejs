@@ -95,32 +95,32 @@
       <div class="card text-center">
         <div class="card-header"></div>
         <div class="card-body">
-          <h6 class="card-title">&#10060 Error <%= statusCode %>
-          </h6>
+          <h6 class="card-title">&#10060 Error <%= statusCode %></h6>
           <h6 class="card-title">Invalid password! Try again.</h6>
         </div>
       </div>
-
-      <% } else if (statusCode===400) { %>
-        <div class="card text-center">
-          <div class="card-header"></div>
-          <div class="card-body">
-            <h6 class="card-title"> &#10060 Error <%= statusCode %> user not found!</h6>
-          </div>
+      
+        <% } else if (statusCode===400) { %>
+      <div class="card text-center">
+        <div class="card-header"></div>
+        <div class="card-body">
+          <h6 class="card-title"> &#10060 Error <%= statusCode %> user not found!</h6>
         </div>
-        
+      </div>
+    
         <% } else if (statusCode===410) { %>
-          <div class="card text-center">
-            <div class="card-header"></div>
-            <div class="card-body">
-              <h6 class="card-title">&#10060 Error <%= statusCode %>
-              </h6>
-              <h6 class="card-title">Invalid user name or password!</h6>
-            </div>
-          </div>
-          <% } %>
+        <div class="card text-center">
+        <div class="card-header"></div>
+        <div class="card-body">
+          <h6 class="card-title">&#10060 Error <%= statusCode %></h6>
+          <h6 class="card-title">Invalid user name or password!</h6>
+        </div>
 
 
+      </div>
+      <% } %>
+
+     
 
 </body>
 
