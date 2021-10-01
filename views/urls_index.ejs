@@ -33,30 +33,30 @@
 <% if (user.urls) { %>
         <% for(let url in user.urls) { %>
             <tr>
-              <td><a href="/urls/<%=url %>"><%= url %></a></td><td><%= user.urls[url] %></td>
+              <td><a href="/u/<%=url %>"><%= url %></a></td><td><%= user.urls[url].longURL %></td>
 
               <td>
                 <form class="form-inline" action="/urls/<%= url %>" method="GET">
-                  <div class="form-group mb-2"><button type="submit" class="btn btn-outline-primary">Edit</button>
+                  <div class="form-group "><button type="submit" class="btn btn-outline-primary">Edit</button>
                   </div>
                 </form>
 
               </td>
               <td>
                 <form class="form-inline" action="/urls/<%=url %>/delete" method="POST">
-                  <div class="form-group mb-2"><button type="submit" class="btn btn-outline-danger">DELETE</button>
+                  <div class="form-group "><button type="submit" class="btn btn-outline-danger">DELETE</button>
                   </div>
                 </form>
 
               </td>
               <td>
                 <form class="form-inline" >
-                  <div class="form-group mb-2"><div type="text" class="quote"> <%= date %></div>   
+                  <div class="form-group"><div type="text" class="quote"> <%= user.urls[url].timestamp %></div>   
                   </div>
                 </form>
                 <td>
                   <form class="form-inline" >
-                    <div class="form-group mb-2"><button type="submit" class="btn btn-outline-warning"> <%count%> </button>
+                    <div type="text"> <b><%= user.urls[url].clicks %> </b></div>
                     </div>
                   </form>
   
