@@ -36,10 +36,12 @@ const validateURL = (str) => {
   return !!pattern.test(str) || !!pattern2.test(str);
 }
 
-const getKeyByValue = (object, value) => {
-  return Object.keys(object).find(key => object[key] === value);
+const checkUrlExists = (urls, value) => {
+  if (urls) {
+    return Object.keys(urls).find(key => urls[key].longURL === value);
+  }
+  return false
 }
-
 
 
 const fetchMyIP = function (callback) {
@@ -82,17 +84,12 @@ const fetchMyIP = function (callback) {
 const getTimestamp = () => {
   let months = ['Jan', 'Feb', 'Mar', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     now = new Date(),
-    formatted = now.getFullYear() + ' ' + months[now.getMonth() - 1] + ' ' + now.getDate() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+    formatted = now.getFullYear() + ' ' + months[now.getMonth() - 1] + ' ' + now.getDate() + ' ' + now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
 
   return formatted
 }
 
 console.log(getTimestamp())
 
-module.exports = {
-  generateRandomString,
-  validateURL,
-  getKeyByValue,
-  fetchMyIP,
-  getTimestamp
-}
+
+module.exports = { generateRandomString, validateURL, checkUrlExists, fetchMyIP, getTimestamp }
