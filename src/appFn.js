@@ -79,4 +79,20 @@ const fetchMyIP = function (callback) {
 
 // console.log(getIP())
 
-module.exports = { generateRandomString, validateURL, getKeyByValue, fetchMyIP }
+const getTimeStamp = () => {
+  let months = ['Jan', 'Feb', 'Mar', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    now = new Date(),
+    formatted = now.getFullYear() + ' ' + months[now.getMonth() - 1] + ' ' + now.getDate() + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+
+  return formatted
+}
+
+console.log(getTimestamp())
+
+module.exports = {
+  generateRandomString,
+  validateURL,
+  getKeyByValue,
+  fetchMyIP,
+  getTimeStamp
+}
