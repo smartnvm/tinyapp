@@ -15,6 +15,7 @@ app.use(cookies());
 app.use(express.static("src"));
 
 
+const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
 const {
@@ -204,9 +205,16 @@ const findUserByEmail = (email, users) => {
 }
 
 const authenticateUser = (email, password, users) => {
+  console.log(email, password)
+  if (password === undefined) return false
   const user = findUserByEmail(email, users)
-  if (user && user.password === password) {
-    return user
+  if (user ) {
+    validatePassword = bcrypt.compareSync(password, user.password)
+    if (validatePassword) {
+
+       return user
+      }
+
   }
   return false
 }
@@ -227,8 +235,10 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const username = req.body.username
   const password = req.body.password
-  user = findUserByEmail(username, usersdB)
-  authStatus = authenticateUser(user.email, password, usersdB)
+  const user = findUserByEmail(username, usersdB)
+
+  console.log(username, password, user)
+  authStatus = authenticateUser(username,password, usersdB)
 
   const templateVars = varInit(null, null, user)
 
@@ -265,25 +275,32 @@ app.get("/register", (req, res) => {
 
 
 app.post("/register", (req, res) => {
-  const { name, email, password } = req.body
+  const { name, email, strPassword } = req.body
   const user = findUserByEmail(email, usersdB)
   const templateVars = varInit(200, null, user)
   if (user) {
     templateVars.statusCode = 410;
     res.render("register", templateVars)
     return
-  } else if ((email.length === 0) || (password.length === 0)) {
+  } else if ((email.length === 0) || (strPassword.length === 0)) {
     templateVars.statusCode = 400;
     res.render("register", templateVars)
     return
   }
+  
+
+  password = bcrypt.hashSync(strPassword, 10);
+
+
   const userId = uuidv4().substring(0, 6)
   let urls = {}
   newUser = { id: userId, name, email, password, urls }
   usersdB[userId] = newUser
 
+  console.log(newUser)
   //log the user => ask the browser to store in cookie
   res.cookie('user_id', userId)
+  
   res.redirect("/urls")
 
 })
