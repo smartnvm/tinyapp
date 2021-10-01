@@ -1,5 +1,6 @@
-const { get } = require('request');
-const request = require('request')
+const bcrypt = require('../node_modules/bcryptjs') // bcryptjs/dist/bcrypt');
+
+const { v4: uuidv4 } = require('../node_modules/uuid');
 
 const generateRandomString = (length) => {
   let shortURL = '';
@@ -52,7 +53,58 @@ const getTimestamp = () => {
   return formatted
 }
 
-console.log(getTimestamp())
 
 
-module.exports = { generateRandomString, validateURL, checkUrlExists, getTimestamp }
+const createUser = (name, email, strPassword) => {
+  let password = bcrypt.hashSync(strPassword, 10);
+  const userId = uuidv4().substring(0, 6)
+  let urls = {}
+  user = { id: userId, name, email, password, urls }
+  return user
+}
+
+
+const getUserByEmail = (email, users) => {
+  for (let userId in users) {
+    const user = users[userId]
+    if (email === user.email) return user
+  }
+  return false
+}
+
+
+
+const authenticateUser = (email, password, user) => {
+  let authStatus = {}
+  console.log(user)
+
+  console.log(bcrypt.hashSync(password, 10));
+  console.log(user.password)
+  if (user) {
+
+    if (bcrypt.compareSync(password, user.password)) {
+      err = 200 //user
+      errMsg = 'Hello, ' + user.name
+
+    } else {
+      err = 403
+      errMsg = 'Invalid password! Try again'
+    }
+  } else if (!user && email.length > 0) {
+    err = 400
+    errMsg = 'Error user not found!'
+  } else {
+    err = 410
+    errMsg = 'Invalid user name or password!'
+  }
+
+  authStatus.num = err
+  authStatus.errMsg = "❌ Error " + err + '\n' + errMsg
+  return authStatus
+}
+
+
+
+module.exports = {
+  generateRandomString, validateURL, checkUrlExists, getTimestamp, createUser, getUserByEmail, authenticateUser
+}

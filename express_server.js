@@ -22,7 +22,10 @@ const {
   generateRandomString,
   validateURL,
   checkUrlExists,
-  getTimestamp } = require('./src/appFn')
+  getTimestamp,
+  createUser,
+  getUserByEmail,
+  authenticateUser } = require('./src/appFn')
 
 
 const usersdB = {
@@ -244,7 +247,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.username
   const password = req.body.password
-  const user = findUserByEmail(email, usersdB)
+  const user = getUserByEmail(email, usersdB)
   const authStatus = authenticateUser(email, password, user)
 
   console.log(password)
@@ -279,7 +282,7 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   const { name, email, strPassword } = req.body
-  const user = findUserByEmail(email, usersdB)
+  const user = getUserByEmail(email, usersdB)
   const templateVars = varInit(200, null, user)
   if (user) {
     templateVars.statusCode = 410;
@@ -311,52 +314,3 @@ app.get("/404", (req, res) => {
 })
 
 
-
-const createUser = (name, email, strPassword) => {
-  let password = bcrypt.hashSync(strPassword, 10);
-  const userId = uuidv4().substring(0, 6)
-  let urls = {}
-  user = { id: userId, name, email, password, urls }
-  return user
-}
-
-
-
-const findUserByEmail = (email, users) => {
-  for (let userId in users) {
-    const user = users[userId]
-    if (email === user.email) return user
-  }
-  return false
-}
-
-
-
-const authenticateUser = (email, password, user) => {
-  let authStatus = {}
-  console.log(user)
-
-  console.log(bcrypt.hashSync(password, 10));
-  console.log(user.password)
-  if (user) {
-
-    if (bcrypt.compareSync(password, user.password)) {
-      err = 200 //user
-      errMsg = 'Hello, ' + user.name
-
-    } else {
-      err = 403
-      errMsg = 'Invalid password! Try again'
-    }
-  } else if (!user && email.length > 0) {
-    err = 400
-    errMsg = 'Error user not found!'
-  } else {
-    err = 410
-    errMsg = 'Invalid user name or password!'
-  }
-
-  authStatus.num = err
-  authStatus.errMsg = "❌ Error " + err + '\n' + errMsg
-  return authStatus
-}
