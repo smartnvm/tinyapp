@@ -173,8 +173,8 @@ const checkUrlExists = (urls, value) => {
 // console.log(urlExist)
 
 
-const fetchLocationByIP = (callback) => {
-  ip = '70.52.138.185'
+const fetchLocationByIP = (ip,callback) => {
+  
   let domain = `https://freegeoip.app/json/${ip}`;  
   request(domain, (error, response, body) => {
     if (error) {

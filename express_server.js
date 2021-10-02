@@ -176,7 +176,7 @@ app.get("/u/:shortURL", (req, res) => {
   
   
   const uuid = uuidv4().substring(0, 5)
-  fetchLocationByIP((error, country) => {
+  fetchLocationByIP(IP, (error, country) => {
     if (error) {
       return `❌ ERROR: ${error.message}`
     }
