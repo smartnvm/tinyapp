@@ -42,35 +42,32 @@
       <table class="table">
         <thead>
           <tr>
-
             <th scope="col"></th>
             <th scope="col"></th>
-            <th scope="col">Date Created </th>
-            <th scope="col">Hits Count </th>
-            <th scope="col">Unique Hits </th>
+            <th scope="col">Visitor </th>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Location </th>
             <th scope="col"></th>
             <th scope="col"></th>
           </tr>
         </thead>
 
         <%#- JSON.stringify(locals) %>
-
-        <tr>
-          
+        <% for(const v in urls.visit) { %>
+      
+        <tr>       
           <td></td>
           <td></td>
-          <td><%= urls.timestamp %></td>
-          <td><%= urls.clicks %></td>
-          <td><%= urls.uClicks %></td>
+          <td><%= v %></td>
+          <td><%= urls.visit[v].timestamp %></td>
+          <td><%= urls.visit[v].location %></td>
           <td></td>
           <td></td>
-        
-
         </tr>
 
         <tbody>
 
-
+<% } %>
           <script type="text/javascript">
             const err = <%= errCode %> 
             if (err === 406) {

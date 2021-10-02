@@ -1,3 +1,4 @@
+const request = require('request');
 const bcrypt = require('bcryptjs'); // bcryptjs/dist/bcrypt');
 const { use } = require('chai');
 
@@ -143,7 +144,7 @@ const getURLsByUserId = (userId, urlsdB) => {
   let userURLs = {}
   for (const url in urlsdB) {
     if (urlsdB[url].userId === userId) {
-      
+
       userURLs[url] = urlsdB[url]
     }
   }
@@ -172,7 +173,23 @@ const checkUrlExists = (urls, value) => {
 // console.log(urlExist)
 
 
+const fetchLocationByIP = (callback) => {
+  ip = '70.52.138.185'
+  let domain = `https://freegeoip.app/json/${ip}`;  
+  request(domain, (error, response, body) => {
+    if (error) {
+      const errMsg = `❌ ERROR: ${error.message}`
+      callback(errMsg,null);
+    }
+    if (response.statusCode !== 200) {
+      const errMsg = console.log(`🚩 Status Code ${response && response.statusCode} when fetching URL: ${domain}`);
+      return callback(errMsg, null)
+    }
+    const location = JSON.parse(body).city +', '+ JSON.parse(body).region_code
+    callback(null,location)
+  });
+};
 
 module.exports = {
-  generateRandomString, validateURL, checkUrlExists, getURLsByUserId, getTimestamp, createUser, getUserByEmail, authenticateUser
+  generateRandomString, validateURL, checkUrlExists, getURLsByUserId, getTimestamp, createUser, getUserByEmail, authenticateUser, fetchLocationByIP
 }

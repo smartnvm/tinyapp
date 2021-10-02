@@ -41,7 +41,8 @@ const {
   createUser,
   getUserByEmail,
   authenticateUser,
-  getURLsByUserId } = require('./src/helpers');
+  getURLsByUserId,
+  fetchLocationByIP } = require('./src/helpers');
 
 
 const usersdB = {
@@ -60,27 +61,27 @@ const urlsDatabase = {
     longURL: "https://https://github.com/smartnvm/tinyapp",
     timestamp: 'Oct 2 2021 3:57 AM',
     clicks: 0,
-    uClicks: 0
+    uClicks: 0,
+    visit: {},
+    ips: {},
   }
 };
 
 
-const createNewURL = (shortURL, longURL, userId, timestamp, clicks, uClicks, ip) => {
+const createNewURL = (shortURL, longURL, userId, timestamp, clicks, uClicks, ip, visit) => {
 
-  let newURL = { shortURL, userId, longURL, timestamp, clicks, uClicks, 'ips': {} }
-  newURL.ips[ip] = 1
+  let newURL = { shortURL, userId, longURL, timestamp, clicks, uClicks, 'ips': {}, 'visit': {} }
   return newURL
 }
+
 const varInit = (loggedIn, errCode, user, urls) => {
   const templateVars = { loggedIn, errCode, user, urls };
   return templateVars;
 };
 
-
-
 app.listen(PORT, () => {
   console.log(`tinyURL listening on port ${PORT}!`);
-  console.log(`(c) AJ - 2021}!`);
+  console.log(`(c) AJ - 2021!`);
   console.log(`----------------------------------------`);
 });
 
@@ -100,6 +101,7 @@ app.get("/urls", (req, res) => {
 
   const urls = getURLsByUserId(userId, urlsDatabase)
   const templateVars = varInit(true, 200, user, urls);
+
   res.render("urls_index", templateVars);
 });
 
@@ -163,13 +165,28 @@ app.get("/u/:shortURL", (req, res) => {
     return;
   }
   const longURL = urlsDatabase[shortURL].longURL;
-
-  let IP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
+  
   urlsDatabase[shortURL].clicks++
-  urlsDatabase[shortURL].ips[IP] = 1
+    
+  let IP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  urlsDatabase[shortURL].ips[IP] = 1;
+  
   const uniqueIP = Object.keys(urlsDatabase[shortURL].ips).length
   urlsDatabase[shortURL].uClicks = uniqueIP
+  
+  
+  const uuid = uuidv4().substring(0, 5)
+  fetchLocationByIP((error, country) => {
+    if (error) {
+      return `❌ ERROR: ${error.message}`
+    }
+    visitor = {
+      timestamp: getTimestamp(),
+      location: country
+    }
+
+    urlsDatabase[shortURL].visit[uuid] = visitor
+  })
 
   res.redirect(longURL);
 });
@@ -206,8 +223,9 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
 
-  const urls = urlsDatabase[shortURL]
-  const templateVars = varInit(true, 200, user, urls)
+  const urls = getURLsByUserId(userId, urlsDatabase)
+  const templateVars = varInit(true, 200, user, urls[shortURL])
+
   res.render("urls_show", templateVars);
 });
 
@@ -268,7 +286,6 @@ app.post("/login", (req, res) => {
   return;
 
 });
-
 
 
 app.get("/register", (req, res) => {
