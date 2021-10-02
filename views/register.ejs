@@ -80,22 +80,22 @@
   <br>
 
 
-  <% if (statusCode === 410) { %>
+  <% if (errCode === 410) { %>
 
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h6 class="card-title"> &#9888 Error <%= statusCode %> </h6>
+        <h6 class="card-title"> &#9888 Error <%= errCode %> </h6>
         <h6 class="card-title"> <%= user.email %>  already exists! <br> Please try again</h6>
       </div>
       <div class="card-footer text-muted"></div>
     </div>
-    <% } else if (statusCode===400) { %>
+    <% } else if (errCode===400) { %>
 
       <div class="card text-center">
         <div class="card-header"></div>
         <div class="card-body">
-          <h6 class="card-title">&#10060 Error <%= statusCode %></h6>
+          <h6 class="card-title">&#10060 Error <%= errCode %></h6>
           <h6 class="card-title">Invalid user name or password!</h6>
 
         </div>

@@ -9,7 +9,7 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
 
-        <% if (user && statusCode === 200) { %>
+        <% if (user && loggedIn) { %>
           <a class="nav-item nav-link" href="/urls/">My URLs</a>
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
           <% } %>
@@ -18,7 +18,7 @@
 
     </div>
 
-      <% if (user && statusCode === 200) { %>
+      <% if (user && loggedIn) { %>
         <div>
           <form method="POST" action="/logout">
           <h2 class="navbar-brand">Hello, <%= user.name %> 🙋

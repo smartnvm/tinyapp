@@ -69,10 +69,6 @@ const getUserByEmail = (email, users) => {
 
 const authenticateUser = (email, password, user) => {
   let authStatus = {}
-  console.log(user)
-
-  console.log(bcrypt.hashSync(password, 10));
-  console.log(user.password)
   if (user) {
 
     if (bcrypt.compareSync(password, user.password)) {

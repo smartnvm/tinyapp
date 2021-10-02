@@ -1,11 +1,11 @@
-/*
-Project Name: tinyURL
-Description: this app reduces URL to unique string 6 characters long
-Version: 1.0.0
-Author: AJ
-Github: https://github.com/smartnvm/tinyapp
-
-*/
+/**********************************************************/
+// Project Name: tinyURL
+// Description: this app reduces URL to unique string 6 characters long
+// Version: 1.0.0
+// Author: AJ
+// Github: https://github.com/smartnvm/tinyapp
+//
+/**********************************************************/
 
 const express = require("express");
 const app = express();
@@ -64,17 +64,26 @@ const urlsDatabase = {
   }
 };
 
+
+const createNewURL = (shortURL, longURL, userId, timestamp, clicks, uClicks, ip) => {
+
+  let newURL = { shortURL, userId, longURL, timestamp, clicks, uClicks, 'ips': {} }
+  newURL.ips[ip] = 1
+  return newURL
+}
+const varInit = (loggedIn, errCode, user, urls) => {
+  const templateVars = { loggedIn, errCode, user, urls };
+  return templateVars;
+};
+
+
+
 app.listen(PORT, () => {
   console.log(`tinyURL listening on port ${PORT}!`);
   console.log(`(c) AJ - 2021}!`);
   console.log(`----------------------------------------`);
 });
 
-
-const varInit = (statusCode, errCode, user, urls) => {
-  const templateVars = { statusCode, errCode, user, urls };
-  return templateVars;
-};
 
 app.get("/", (req, res) => {
   res.redirect('/urls');
@@ -90,32 +99,23 @@ app.get("/urls", (req, res) => {
   }
 
   const urls = getURLsByUserId(userId, urlsDatabase)
-  console.log(urls)
-  const templateVars = varInit(200, 200, user, urls);
+  const templateVars = varInit(true, 200, user, urls);
   res.render("urls_index", templateVars);
 });
+
 
 app.get("/urls/new", (req, res) => {
   const userId = req.session.user_id;
   const user = usersdB[userId];
-
   if (!user) {
     res.redirect("/login");
     return;
   }
 
-  let urls = getURLsByUserId(userId, urlsDatabase)
-  const templateVars = varInit(200, 200, user, urls);
+  const templateVars = varInit(true, 200, user, null);
   res.render('urls_new', templateVars);
 });
 
-
-const createNewURL = (shortURL, longURL, userId, timestamp, clicks, uClicks, ip) => {
-
-  let newURL = { shortURL, userId, longURL, timestamp, clicks, uClicks, 'ips': {} }
-  newURL.ips[ip] = 1
-  return newURL
-}
 
 app.post("/urls", (req, res) => {
 
@@ -127,46 +127,30 @@ app.post("/urls", (req, res) => {
   }
 
   const longURL = req.body.longURL;
-  console.log('check current user URLs!');
-  console.log('.....................')
   let urls = getURLsByUserId(userId, urlsDatabase)
   const urlExist = checkUrlExists(urls, longURL);
 
-  console.log(urlExist)
-
   if (urlExist) {
-    let templateVars = varInit(200, 410, user, urls);
+    let templateVars = varInit(true, 410, user, urls);
     res.render('urls_new', templateVars);
     return;
   } else if (!validateURL(longURL)) {
-    let templateVars = varInit(200, 406, user, urls);
+    let templateVars = varInit(true, 406, user, urls);
     res.render('urls_new', templateVars);
     return;
   }
 
   const shortURL = generateRandomString(6);
   const timestamp = getTimestamp();
-  const clicks = 0;
 
   const IP = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
   const newURL = createNewURL(shortURL, longURL, userId, timestamp, 0, 0, IP)
   urlsDatabase[shortURL] = newURL
 
-  console.log(`${shortURL} written to database!`)
-  console.log('.....................')
-  console.log(urlsDatabase)
-
-
   urls = getURLsByUserId(userId, urlsDatabase)
-
-  console.log('filtered user URLs!')
-  console.log('.....................')
-  console.log(urls)
-  templateVars = varInit(200, null, user, urls)
-
-
-  res.redirect("urls")//, templateVars);
+  templateVars = varInit(true, null, user, urls)
+  res.redirect("/urls")
 });
 
 
@@ -187,9 +171,7 @@ app.get("/u/:shortURL", (req, res) => {
   const uniqueIP = Object.keys(urlsDatabase[shortURL].ips).length
   urlsDatabase[shortURL].uClicks = uniqueIP
 
-  console.log(urlsDatabase)
   res.redirect(longURL);
-
 });
 
 
@@ -216,7 +198,6 @@ app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session.user_id;
   const user = usersdB[userId];
 
-
   if (!user) {
     res.redirect("/login");
     return;
@@ -226,8 +207,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 
   const urls = urlsDatabase[shortURL]
-
-  const templateVars = varInit(200, 200, user, urls)
+  const templateVars = varInit(true, 200, user, urls)
   res.render("urls_show", templateVars);
 });
 
@@ -245,14 +225,14 @@ app.post("/urls/:shortURL", (req, res) => {
 
   if (!validateURL(longURL)) {
     const urls = urlsDatabase[shortURL]
-    const templateVars = varInit(200, 406, user, urls);
+    const templateVars = varInit(true, 406, user, urls);
     res.render("urls_show", templateVars);
     return;
   }
 
   urlsDatabase[shortURL].longURL = longURL;
   const urls = urlsDatabase[shortURL]
-  const templateVars = varInit(200, 200, user, urls);
+  const templateVars = varInit(true, 200, user, urls);
   res.redirect("/urls");
   return;
 });
@@ -266,10 +246,9 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = varInit(200, null, null);
+  const templateVars = varInit(false, null, null, null);
   res.render('login', templateVars);
 });
-
 
 
 app.post("/login", (req, res) => {
@@ -278,23 +257,13 @@ app.post("/login", (req, res) => {
   const user = getUserByEmail(email, usersdB);
   const authStatus = authenticateUser(email, password, user);
 
-  console.log(password);
-
-  // authStatus = authenticateUser(user.email, password, usersdB)
-  console.log('-----------login:------', authStatus);
-  let templateVars = varInit(null, null, user);
-
   if (user && authStatus.num === 200) {
     req.session.user_id = user.id;
-    templateVars.statusCode = 200;
-    res.render("urls_index", templateVars);
+    res.redirect("/urls")
     return;
   }
-  const statusCode = authStatus.num;
-  console.log(authStatus, statusCode);
 
-  const urls = getURLsByUserId(user.userId, urlsDatabase)
-  templateVars = varInit(statusCode, null, user, urls);
+  const templateVars = varInit(false, authStatus.num, user, null);
   res.render('login', templateVars);
   return;
 
@@ -303,7 +272,7 @@ app.post("/login", (req, res) => {
 
 
 app.get("/register", (req, res) => {
-  const templateVars = varInit(200, 200, null);
+  const templateVars = varInit(false, 200, null, null);
   res.render("register", templateVars);
 
 });
@@ -312,22 +281,19 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { name, email, strPassword } = req.body;
   const user = getUserByEmail(email, usersdB);
-  const templateVars = varInit(200, null, user);
+  const templateVars = varInit(true, 200, user, null);
   if (user) {
-    templateVars.statusCode = 410;
+    const templateVars = varInit(true, 410, user, null);
     res.render("register", templateVars);
     return;
   } else if (!email || !strPassword) {
-    templateVars.statusCode = 400;
+    const templateVars = varInit(true, 400, user, null);
     res.render("register", templateVars);
     return;
   }
 
   const newUser = createUser(name, email, strPassword);
   usersdB[newUser.id] = newUser;
-
-  console.log(newUser);
-  //log the user => ask the browser to store in cookie
   req.session.user_id = newUser.id;
 
   res.redirect("/urls");
@@ -338,8 +304,18 @@ app.post("/register", (req, res) => {
 app.get("/404", (req, res) => {
   const userId = req.session.user_id;
   const user = usersdB[userId];
-  const templateVars = varInit(200, 404, user);
+  const templateVars = varInit(true, 404, user, null);
   res.render("err_page", templateVars);
 });
 
 
+app.get("/:url", (req, res) => {
+
+  const okRoute = ['/', '/urls', '/urls/new', '/u/', 'register', 'login']
+  const url = req.params.any
+
+  if (!okRoute.includes(url)) {
+    res.redirect('/404')
+  }
+
+});
