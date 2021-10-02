@@ -1,4 +1,5 @@
-const bcrypt = require('bcryptjs') // bcryptjs/dist/bcrypt');
+const bcrypt = require('bcryptjs'); // bcryptjs/dist/bcrypt');
+const { use } = require('chai');
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -37,13 +38,6 @@ const validateURL = (str) => {
   return !!pattern.test(str) || !!pattern2.test(str);
 }
 
-const checkUrlExists = (urls, value) => {
-  if (urls) {
-    return Object.keys(urls).find(key => urls[key].longURL === value);
-  }
-  return false
-}
-
 
 const getTimestamp = () => {
   let months = ['Jan', 'Feb', 'Mar', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -58,8 +52,7 @@ const getTimestamp = () => {
 const createUser = (name, email, strPassword) => {
   let password = bcrypt.hashSync(strPassword, 10);
   const userId = uuidv4().substring(0, 6)
-  let urls = {}
-  user = { id: userId, name, email, password, urls }
+  user = { id: userId, name, email, password }
   return user
 }
 
@@ -105,6 +98,85 @@ const authenticateUser = (email, password, user) => {
 
 
 
+const urlsDatabase = {
+  b6UzxQ: {
+    userId: "aJ48lW",
+    longURL: "https://www.txsn.ca",
+    timestamp: 'Oct 1 2021 3:57 PM',
+    clicks: 0,
+    ipList: { 'testIp': 1 },
+    uClicks: 0
+  },
+  b6UTzQ: {
+    userId: "aJ48lW",
+    longURL: "https://www.tsn.ca",
+    timestamp: 'Oct 1 2021 3:57 PM',
+    clicks: 0,
+    ipList: { 'testIp': 2 },
+    uClicks: 0
+  },
+  b4UTzQ: {
+    userId: "aJ58lW",
+    longURL: "https://www.tsn.ca",
+    timestamp: 'Oct 1 2021 3:57 PM',
+    clicks: 0,
+    ipList: { 'testIp': 3 },
+    uClicks: 0
+  },
+  b6UxzQ: {
+    userId: "aJ48lW",
+    longURL: "https://www.tsn.ca",
+    timestamp: 'Oct 1 2021 3:57 PM',
+    clicks: 0,
+    ipList: { 'testIp': 4 },
+    uClicks: 0
+  },
+  b6UTxQ: {
+    userId: "aJ48lW",
+    longURL: "https://www.tsn.ca",
+    timestamp: 'Oct 1 2021 3:57 PM',
+    clicks: 0,
+    ipList: { 'testIp': 5 },
+    uClicks: 0
+  }
+
+};
+
+
+const getURLsByUserId = (userId, urlsdB) => {
+  let userURLs = {}
+  for (const url in urlsdB) {
+    if (urlsdB[url].userId === userId) {
+      
+      userURLs[url] = urlsdB[url]
+    }
+  }
+  return userURLs
+
+}
+
+// urls = getURLsByUserId('aJ48lW', urlsDatabase)
+// console.log(urls)
+
+// for (url in urls) {
+//   console.log(urls[url].longURL)
+// }
+
+
+const checkUrlExists = (urls, value) => {
+  for (const url in urls) {
+    if (urls[url].longURL === value) {
+      return true
+    }
+  }
+  return false
+}
+
+// const urlExist = checkUrlExists(urls, 'https://www.tsn.ca')
+// console.log(urlExist)
+
+
+
 module.exports = {
-  generateRandomString, validateURL, checkUrlExists, getTimestamp, createUser, getUserByEmail, authenticateUser
+  generateRandomString, validateURL, checkUrlExists, getURLsByUserId, getTimestamp, createUser, getUserByEmail, authenticateUser
 }

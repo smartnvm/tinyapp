@@ -14,48 +14,81 @@
     need to stringify before we can see the parameters   -->
 
   <%# JSON.stringify(locals) %>
-    <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <h5 class="card-title"><b>TinyURL for: <%= longURL %></b></h5>
-        <p class="card-text"><b>Short URL: <a href="/u/<%= shortURL %>">
-              <%= shortURL %>
-            </a></b></a></p>
-      </div>
-      <div class="card text-center"></div>
 
-      <h3 class="card-title"><b><p></p>Edit</b></h3>
-      <div class="row justify-content-center">
-        <form class="form-inline" action="/urls/<%= shortURL %>?<% longURL %>" method="POST">
-          <div class="form-group mb-4">
-            <label for="longURL">Enter New URL:</label>
-            <input class="form-control" type="text" name="newURL" placeholder="http://"
-              style="width: 300px; margin: 1em">
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </form>
-      </div>
-      <%# JSON.stringify(locals) %>
+
+  <div class="card text-center">
+    
+    
+    <div class="card-body">
+    
+    <h3 class="card-title"><b><p></p>Edit URL</b></h3>
+      <h5 class="card-title"><b>TinyURL for: <%= urls.longURL %></b></h5>
+      <p class="card-text"><b>Short URL: <a href="/u/<%= urls.shortURL %>"><%= urls.shortURL %></a></b></p>
     </div>
 
-  
-    <script type="text/javascript">
-      const err = <%= errCode %>
-      if  (err === 406) {
-        alert(`Error ${err}: Invalid URL format!`);
-     }
-      </script>
+    <div class="row justify-content-center">
+      <form class="form-inline" action="/urls/<%= urls.shortURL%>" <% urls.shortURL %> method="POST">
+        <div class="form-group mb-4">
+          <label for="longURL">Enter New URL:</label>
+          <input class="form-control" type="text" name="newURL" placeholder="http://example.com"
+            style="width: 300px; margin: 1em">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-      crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-      crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-      crossorigin="anonymous"></script>
+
+
+      <table class="table">
+        <thead>
+          <tr>
+
+            <th scope="col"></th>
+            <th scope="col"></th>
+            <th scope="col">Date Created </th>
+            <th scope="col">Hits Count </th>
+            <th scope="col">Unique Hits </th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+
+        <%#- JSON.stringify(locals) %>
+
+        <tr>
+          
+          <td></td>
+          <td></td>
+          <td><%= urls.timestamp %></td>
+          <td><%= urls.clicks %></td>
+          <td><%= urls.uClicks %></td>
+          <td></td>
+          <td></td>
+        
+
+        </tr>
+
+        <tbody>
+
+
+          <script type="text/javascript">
+            const err = <%= errCode %> 
+            if (err === 406) {
+              alert(`Error ${err}: Invalid URL format!`);
+            }
+          </script>
+
+
+          <!-- Bootstrap JS -->
+          <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+          <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
 </body>
-</html>
 
+</html>
