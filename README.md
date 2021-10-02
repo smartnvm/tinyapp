@@ -8,9 +8,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["Register Page"](https://github.com/smartnvm/tinyapp/blob/master/docs/register.png)
 
-!["My URLs Page"](https://github.com/smartnvm/tinyapp/blob/master/docs/myURLs.png)
-
 !["Create TinyURL Page"](https://github.com/smartnvm/tinyapp/blob/master/docs/create_tinyURL.png)
+
+!["My URLs Page"](https://github.com/smartnvm/tinyapp/blob/master/docs/myURLs.png)
 
 !["Edit URLs Page"](https://github.com/smartnvm/tinyapp/blob/master/docs/editURL.png)
 
