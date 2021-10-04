@@ -24,11 +24,25 @@
 </head>
 
 <body>
-  <div class="container">
-    <div class="container">
-      <h6> <br></h6>
 
+
+  <% if (errCode === 410) { %>
+    <div class="text-center">
+      <div class="card-body">
+        <h6 class="card-title"> &#9888 Error <%= errCode %> </h6>
+        <h6 class="card-title"> <%= user.email %>  already exists! <br> Please try again</h6>
+      </div>
     </div>
+    <% } else if (errCode===400) { %>
+      <div class="text-center">
+        <div class="card-body">
+          <h6 class="card-title">&#10060 Error <%= errCode %></h6>
+          <h6 class="card-title">Invalid user name or password!</h6>
+      </div>
+      <% } %>
+      
+  <div class="container">
+    <p> </p>
     <div class="d-flex justify-content-center ">
 
       <div class="card">
@@ -79,29 +93,6 @@
   </div>
   <br>
 
-
-  <% if (errCode === 410) { %>
-
-    <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <h6 class="card-title"> &#9888 Error <%= errCode %> </h6>
-        <h6 class="card-title"> <%= user.email %>  already exists! <br> Please try again</h6>
-      </div>
-      <div class="card-footer text-muted"></div>
-    </div>
-    <% } else if (errCode===400) { %>
-
-      <div class="card text-center">
-        <div class="card-header"></div>
-        <div class="card-body">
-          <h6 class="card-title">&#10060 Error <%= errCode %></h6>
-          <h6 class="card-title">Invalid user name or password!</h6>
-
-        </div>
-        <div class="card-footer text-muted"></div>
-      </div>
-      <% } %>
 
 
 
