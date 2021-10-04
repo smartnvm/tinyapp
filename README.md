@@ -25,6 +25,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 - cookie-session
 - morgan
 - uuid
+- request
 
 ## Getting Started
 
