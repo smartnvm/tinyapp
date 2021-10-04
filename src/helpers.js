@@ -4,21 +4,20 @@ const { use } = require('chai');
 
 const { v4: uuidv4 } = require('uuid');
 
+
+//generate random string from a set of allowed characters
 const generateRandomString = (length) => {
   let shortURL = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let charLength = characters.length
   for (i = 0; i < length; i++) {
-
-    // let num = Math.floor((Math.random() * 127))
-    // shortURL += String.fromCharCode(num)
-
     let num = Math.floor((Math.random() * charLength))
     shortURL += characters[num]
   }
   return shortURL
 }
 
+//validate URL with RegExp
 const validateURL = (str) => {
   const pattern = new RegExp('^(http?:\\/\\/)?' + // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -33,23 +32,19 @@ const validateURL = (str) => {
     '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
     '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
     '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-
-  // console.log('http: ',pattern.test(str))
-  // console.log('https:',pattern2.test(str))
   return !!pattern.test(str) || !!pattern2.test(str);
 }
 
-
+//get timestamp and return friendly format
 const getTimestamp = () => {
   let months = ['Jan', 'Feb', 'Mar', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     now = new Date(),
     formatted = now.getFullYear() + ' ' + months[now.getMonth() - 1] + ' ' + now.getDate() + ' ' + now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
-
   return formatted
 }
 
 
-
+//creates new user
 const createUser = (name, email, strPassword) => {
   let password = bcrypt.hashSync(strPassword, 10);
   const userId = uuidv4().substring(0, 6)
@@ -57,7 +52,7 @@ const createUser = (name, email, strPassword) => {
   return user
 }
 
-
+//find user in a database by email
 const getUserByEmail = (email, users) => {
   for (let userId in users) {
     const user = users[userId]
@@ -67,7 +62,7 @@ const getUserByEmail = (email, users) => {
 }
 
 
-
+//authenticate user 
 const authenticateUser = (email, password, user) => {
   let authStatus = {}
   if (user) {
@@ -93,58 +88,11 @@ const authenticateUser = (email, password, user) => {
   return authStatus
 }
 
-
-
-const urlsDatabase = {
-  b6UzxQ: {
-    userId: "aJ48lW",
-    longURL: "https://www.txsn.ca",
-    timestamp: 'Oct 1 2021 3:57 PM',
-    clicks: 0,
-    ipList: { 'testIp': 1 },
-    uClicks: 0
-  },
-  b6UTzQ: {
-    userId: "aJ48lW",
-    longURL: "https://www.tsn.ca",
-    timestamp: 'Oct 1 2021 3:57 PM',
-    clicks: 0,
-    ipList: { 'testIp': 2 },
-    uClicks: 0
-  },
-  b4UTzQ: {
-    userId: "aJ58lW",
-    longURL: "https://www.tsn.ca",
-    timestamp: 'Oct 1 2021 3:57 PM',
-    clicks: 0,
-    ipList: { 'testIp': 3 },
-    uClicks: 0
-  },
-  b6UxzQ: {
-    userId: "aJ48lW",
-    longURL: "https://www.tsn.ca",
-    timestamp: 'Oct 1 2021 3:57 PM',
-    clicks: 0,
-    ipList: { 'testIp': 4 },
-    uClicks: 0
-  },
-  b6UTxQ: {
-    userId: "aJ48lW",
-    longURL: "https://www.tsn.ca",
-    timestamp: 'Oct 1 2021 3:57 PM',
-    clicks: 0,
-    ipList: { 'testIp': 5 },
-    uClicks: 0
-  }
-
-};
-
-
+//filter urls database by userId
 const getURLsByUserId = (userId, urlsdB) => {
   let userURLs = {}
   for (const url in urlsdB) {
     if (urlsdB[url].userId === userId) {
-
       userURLs[url] = urlsdB[url]
     }
   }
@@ -152,14 +100,7 @@ const getURLsByUserId = (userId, urlsdB) => {
 
 }
 
-// urls = getURLsByUserId('aJ48lW', urlsDatabase)
-// console.log(urls)
-
-// for (url in urls) {
-//   console.log(urls[url].longURL)
-// }
-
-
+//check if URL exist in dB
 const checkUrlExists = (urls, value) => {
   for (const url in urls) {
     if (urls[url].longURL === value) {
@@ -169,12 +110,9 @@ const checkUrlExists = (urls, value) => {
   return false
 }
 
-// const urlExist = checkUrlExists(urls, 'https://www.tsn.ca')
-// console.log(urlExist)
-
-
+//API call to fetch location based on IP
+//returns city and region code, i.e. Ottawa, ON
 const fetchLocationByIP = (ip,callback) => {
-  
   let domain = `https://freegeoip.app/json/${ip}`;  
   request(domain, (error, response, body) => {
     if (error) {
