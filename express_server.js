@@ -218,12 +218,15 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!user) {
     res.redirect("/login");
     return;
-  } else if (!urlsDatabase[shortURL]) {
+  } 
+  
+  const urls = getURLsByUserId(userId, urlsDatabase)
+  
+  if (!urls[shortURL]) {
     res.redirect('/404');
     return;
-  }
+  } 
 
-  const urls = getURLsByUserId(userId, urlsDatabase)
   const templateVars = varInit(true, 200, user, urls[shortURL])
 
   res.render("urls_show", templateVars);
@@ -298,13 +301,12 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { name, email, strPassword } = req.body;
   const user = getUserByEmail(email, usersdB);
-  const templateVars = varInit(true, 200, user, null);
   if (user) {
-    const templateVars = varInit(true, 410, user, null);
+    const templateVars = varInit(false, 410, user, null);
     res.render("register", templateVars);
     return;
   } else if (!email || !strPassword) {
-    const templateVars = varInit(true, 400, user, null);
+    const templateVars = varInit(false, 400, user, null);
     res.render("register", templateVars);
     return;
   }
