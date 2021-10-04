@@ -58,7 +58,7 @@ const urlsDatabase = {
   b6UTxQ: {
     userId: "AJ",
     shortURL: 'b6UTxQ',
-    longURL: "https://https://github.com/smartnvm/tinyapp",
+    longURL: "https://github.com/smartnvm/tinyapp",
     timestamp: 'Oct 2 2021 3:57 AM',
     clicks: 0,
     uClicks: 0,
@@ -96,7 +96,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
   const user = usersdB[userId];
-
+   
   //check if user is logged in, and redirect to login if not
   if (!user) {
     res.redirect("/login");
@@ -218,12 +218,13 @@ app.get("/u/:shortURL", (req, res) => {
     //add location and time stamp for the visit uuid
     urlsDatabase[shortURL].visit[uuid] = visitor
   })
-  if (!longURL.includes('http://') || !longURL.includes('https://')) {
+
+  if (!longURL.includes('http://') && !longURL.includes('https://')) {
     //add 'http://' if URL does not have it
     //this is to avoid 404 when the URL actually exists
-    longURL = 'http://' + longURL
+    longURL = `http://` + longURL
   }
-
+  
   //redirect to longURL
   res.redirect(longURL);
 });
@@ -250,8 +251,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
   
   delete urlsDatabase[shortURL];
-  
-  console.log('urlsdB', urlsDatabase)
   res.redirect("/urls");
 
 });
