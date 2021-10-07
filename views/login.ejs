@@ -43,7 +43,7 @@
       <button type="submit" class="btn btn-light">Logout</button>
     </form>
 
-    <% } else if (errCode===403) { %>
+    <% } else if (errCode===401) { %>
       <div class=" text-center">
         <div class="card-body">
           <h6 class="card-title">&#10060 Error <%= errCode %></h6>
@@ -57,7 +57,7 @@
         </div>
     
     
-        <% } else if (errCode===410) { %>
+        <% } else if (errCode===402) { %>
         <div class=" text-center">
         <div class="card-body">
           <h6 class="card-title">&#10060 Error <%= errCode %></h6>
@@ -65,16 +65,24 @@
         </div>
 
 
+        <% } else if (errCode===403) { %>
+          <div class=" text-center">
+          <div class="card-body">
+            <h6 class="card-title">&#10060 Error <%= errCode %></h6>
+            <h6 class="card-title">Access denied! Please login first!</h6>
+          </div>
+  
+
       </div>
       <% } %>
+      <br>
           </div>
     <div class="d-flex justify-content-center ">
       
-     
       <div class="card">
         <div class="card-header">
           <h3>Sign In</h3>
-          <img src="./tinyURL.png" />
+          <img src="http://localhost:8080/tinyURL.png" />
 
         </div>
         <div class="card-body">

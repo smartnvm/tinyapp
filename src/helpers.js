@@ -72,14 +72,14 @@ const authenticateUser = (email, password, user) => {
       errMsg = 'Hello, ' + user.name
 
     } else {
-      err = 403
+      err = 401
       errMsg = 'Invalid password! Try again'
     }
   } else if (!user && email.length > 0) {
     err = 400
     errMsg = 'Error user not found!'
   } else {
-    err = 410
+    err = 402
     errMsg = 'Invalid user name or password!'
   }
 

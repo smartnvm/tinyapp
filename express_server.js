@@ -89,20 +89,24 @@ app.listen(PORT, () => {
 
 //redirct to /urls if user hit /
 app.get("/", (req, res) => {
-  res.redirect('/urls');
+  const userId = req.session.user_id;
+  if (userId) {
+    res.redirect('/urls');
+  }
+  res.redirect('login');
 });
 
 
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
   const user = usersdB[userId];
-   
+
   //check if user is logged in, and redirect to login if not
   if (!user) {
-    res.redirect("/login");
+    const templateVars = varInit(false, 403, null, null)
+    res.render("login", templateVars);
     return;
   }
-
   //retrieve user specific urls
   const urls = getURLsByUserId(userId, urlsDatabase)
 
@@ -219,12 +223,13 @@ app.get("/u/:shortURL", (req, res) => {
     urlsDatabase[shortURL].visit[uuid] = visitor
   })
 
+
   if (!longURL.includes('http://') && !longURL.includes('https://')) {
     //add 'http://' if URL does not have it
     //this is to avoid 404 when the URL actually exists
     longURL = `http://` + longURL
   }
-  
+
   //redirect to longURL
   res.redirect(longURL);
 });
@@ -249,8 +254,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.redirect('/404')
     return
   }
-  
+
   delete urlsDatabase[shortURL];
+
   res.redirect("/urls");
 
 });
@@ -263,7 +269,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const user = usersdB[userId];
   //check if user is logged in, and redirect to login if not
   if (!user) {
-    res.redirect("/login");
+    const templateVars = varInit(false, 403, null, null)
+    res.render("login", templateVars);
     return;
   }
 
@@ -289,10 +296,10 @@ app.post("/urls/:shortURL", (req, res) => {
   const user = usersdB[userId];
   //check if user is logged in, and redirect to login if not
   if (!user) {
-    res.redirect("/login");
+    const templateVars = varInit(false, 403, null, null)
+    res.render("login", templateVars);
     return;
   }
-
   const longURL = req.body.newURL;
   const shortURL = req.params.shortURL;
 
@@ -307,7 +314,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
   //URL is valid - write to urlsDatabase
   urlsDatabase[shortURL].longURL = longURL;
-  
+
   //redirect to myURLs page
   res.redirect("/urls");
   return;
@@ -337,7 +344,7 @@ app.post("/login", (req, res) => {
 
   //retrieve user from user database for matching email
   const user = getUserByEmail(email, usersdB);
-  
+
   //authenticate if matching user found
   const authStatus = authenticateUser(email, password, user);
 
@@ -369,7 +376,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { name, email, strPassword } = req.body;
   const user = getUserByEmail(email, usersdB);
-  
+
   //check if user exist
   if (user) {
     //errCode 410: user exist
