@@ -80,13 +80,6 @@ const varInit = (loggedIn, errCode, user, urls) => {
   return templateVars;
 };
 
-app.listen(PORT, () => {
-  console.log(`tinyURL listening on port ${PORT}!`);
-  console.log(`(c) AJ - 2021!`);
-  console.log(`----------------------------------------`);
-});
-
-
 //redirct to /urls if user hit /
 app.get("/", (req, res) => {
   const userId = req.session.user_id;
@@ -465,4 +458,11 @@ app.get("/:url", (req, res) => {
     res.redirect('/404')
   }
 
+});
+
+
+app.listen(PORT, () => {
+  console.log(`tinyURL listening on port ${PORT}!`);
+  console.log(`(c) AJ - 2021!`);
+  console.log(`----------------------------------------`);
 });
