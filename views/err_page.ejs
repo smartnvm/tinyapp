@@ -17,9 +17,20 @@
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
-      <h2 class="card-title">Error <%= errCode %> : Page not found!</h2>
-      <h5 class="card-text"> Take me <a href="/">home!</a></h5>
-    </div>
+
+      <% if (errCode===403) { %>
+        <div class=" text-center">
+        <div class="card-body">
+          <h5 class="card-title">&#10060 Error <%= errCode %></h5>
+          <h5 class="card-title">Forbidden! You are not the authorized owner of this URL !</h5>
+        </div>
+
+        <% } else if (errCode === 404) { %>
+          <h2 class="card-title">Error <%= errCode %> : Page not found!</h2>
+        <% } %>
+
+        <h5 class="card-text"> Take me <a href="/">home!</a></h5>
+      </div>
     <div class="card-footer text-muted"></div>
   </div>
   <!-- Bootstrap JS -->
