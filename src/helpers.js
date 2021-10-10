@@ -45,8 +45,8 @@ const getTimestamp = () => {
 
 
 //creates new user
-const createUser = (name, email, strPassword) => {
-  let password = bcrypt.hashSync(strPassword, 10);
+const createUser = (name, email, password) => {
+  password = bcrypt.hashSync(password, 10);
   const userId = uuidv4().substring(0, 6)
   user = { id: userId, name, email, password }
   return user
