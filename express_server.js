@@ -138,9 +138,11 @@ app.post("/urls", (req, res) => {
   const user = usersdB[userId];
   //check if user is logged in, and redirect to login if not
   if (!user) {
-    res.redirect("/login");
+    const templateVars = varInit(false, 403, null, null)
+    res.render("login", templateVars);
     return;
   }
+
 
   //parse longURL
   const longURL = req.body.longURL;
@@ -223,7 +225,6 @@ app.get("/u/:shortURL", (req, res) => {
     urlsDatabase[shortURL].visit[uuid] = visitor
   })
 
-
   if (!longURL.includes('http://') && !longURL.includes('https://')) {
     //add 'http://' if URL does not have it
     //this is to avoid 404 when the URL actually exists
@@ -241,22 +242,32 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const user = usersdB[userId];
   //check if user is logged in, and redirect to login if not
   if (!user) {
-    res.redirect("/login");
+    const templateVars = varInit(false, 403, null, null)
+    res.render("login", templateVars);
     return;
   }
   //parse shortURL to be deleted
   const shortURL = req.params.shortURL;
 
+  //check if shorURL exist in master database
+  if (!urlsDatabase[shortURL]) {
+    res.redirect("/404")
+    return;
+  }
+
   //filter urls for specific user
   //prevent user from deleting other users' URLs
   urls = getURLsByUserId(userId, urlsDatabase)
-  if (!checkUrlExists(urls, urlsDatabase[shortURL].longURL)) {
-    res.redirect('/404')
-    return
+
+  //check if URL is owned by the user 
+  //acess denied if not found
+  if (!urls[shortURL]) {
+    const templateVars = varInit(false, 403, null, null)
+    res.render("err_page", templateVars);
+    return;
   }
 
   delete urlsDatabase[shortURL];
-
   res.redirect("/urls");
 
 });
@@ -274,13 +285,20 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
 
+  //check if URL exist in master database
+  if (!urlsDatabase[shortURL]) {
+    res.redirect("/404")
+    return;
+  }
+
   //retrieve user specific urls
   const urls = getURLsByUserId(userId, urlsDatabase)
 
   //check to see if url exist in the user's urls
-  //redirect to 404 if not found
+  //access denied  403 if not found
   if (!urls[shortURL]) {
-    res.redirect('/404');
+    const templateVars = varInit(true, 403, null, null)
+    res.render("err_page", templateVars);
     return;
   }
 
@@ -290,7 +308,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
-// submit New URL 
+// submit New URL
 app.post("/urls/:shortURL", (req, res) => {
   const userId = req.session.user_id;
   const user = usersdB[userId];
@@ -300,8 +318,24 @@ app.post("/urls/:shortURL", (req, res) => {
     res.render("login", templateVars);
     return;
   }
-  const longURL = req.body.newURL;
+
+  const longURL = req.body.longURL;
   const shortURL = req.params.shortURL;
+
+  //check if URL exist in master database
+  if (!urlsDatabase[shortURL]) {
+    res.redirect("/404")
+    return;
+  }
+
+  const urls = getURLsByUserId(userId, urlsDatabase)
+  //check if URL is owned by the user 
+  //acess denied if not found
+  if (!urls[shortURL]) {
+    const templateVars = varInit(false, 403, null, null)
+    res.render("err_page", templateVars);
+    return;
+  }
 
   //check if URL format is valid 
   //render edit page if URL format is invalid
@@ -321,15 +355,21 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 
-
 app.post("/logout", (req, res) => {
   //clears cookie and redirect to login page
   req.session = null;
-  res.redirect("/login");
+  const templateVars = varInit(false, 200, null, null);
+  res.render('login', templateVars);
   return;
 });
 
 app.get("/login", (req, res) => {
+  //check if we are already logged in
+  const userId = req.session.user_id;
+  if (userId && usersdB[userId]) {
+    res.redirect('/urls');
+  }
+
   //initialize template variable, 
   //if we are here we are not logged in
   const templateVars = varInit(false, null, null, null);
@@ -366,6 +406,12 @@ app.post("/login", (req, res) => {
 
 //register new user
 app.get("/register", (req, res) => {
+  //check if we are already logged in
+  const userId = req.session.user_id;
+
+  if (userId && usersdB[userId]) {
+    res.redirect('/urls');
+  }
   //initalize template vars 
   const templateVars = varInit(false, null, null, null);
   res.render("register", templateVars);
@@ -374,7 +420,7 @@ app.get("/register", (req, res) => {
 
 
 app.post("/register", (req, res) => {
-  const { name, email, strPassword } = req.body;
+  const { name, email, password } = req.body;
   const user = getUserByEmail(email, usersdB);
 
   //check if user exist
@@ -383,7 +429,7 @@ app.post("/register", (req, res) => {
     const templateVars = varInit(false, 410, user, null);
     res.render("register", templateVars);
     return;
-  } else if (!email || !strPassword) {
+  } else if (!email || !password) {
     //errCode 400: Invalid user name or password
     const templateVars = varInit(false, 400, user, null);
     res.render("register", templateVars);
@@ -391,7 +437,7 @@ app.post("/register", (req, res) => {
   }
 
   //user and password are OK - create new
-  const newUser = createUser(name, email, strPassword);
+  const newUser = createUser(name, email, password);
   //wirte new user to usersdB
   usersdB[newUser.id] = newUser;
 
