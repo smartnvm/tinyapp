@@ -10,28 +10,20 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
-
-app.set("view engine", "ejs");
-
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: true }));
-
 const session = require("cookie-session");
 const morgan = require('morgan');
-app.use(morgan('dev'));
+const { v4: uuidv4 } = require('uuid');
 
+app.set("view engine", "ejs");
+app.use(express.static("src"));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 app.use(session({
   name: 'session', keys: ['test'],
   maxAge: 24 * 60 * 60 * 1000
 }));
 
-
-
-app.use(express.static("src"));
-
-
-const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
 
 const {
   generateRandomString,
@@ -80,6 +72,7 @@ const varInit = (loggedIn, errCode, user, urls) => {
   return templateVars;
 };
 
+
 //redirct to /urls if user hit /
 app.get("/", (req, res) => {
   const userId = req.session.user_id;
@@ -93,7 +86,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
   const user = usersdB[userId];
-
+  
   //check if user is logged in, and redirect to login if not
   if (!user) {
     const templateVars = varInit(false, 403, null, null)
@@ -166,7 +159,7 @@ app.post("/urls", (req, res) => {
   const IP = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
   //create newURL record
-  const newURL = createNewURL(shortURL, longURL, userId, timestamp, 0, 0, IP)
+  const newURL = createNewURL(shortURL, longURL, userId, timestamp,0, 0, IP)
 
   //write to master urlsDatabase
   urlsDatabase[shortURL] = newURL
@@ -256,11 +249,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   //acess denied if not found
   if (!urls[shortURL]) {
     const templateVars = varInit(false, 403, null, null)
-    res.render("err_page", templateVars);
+    res.render("err_page", templateVars);403
     return;
   }
 
   delete urlsDatabase[shortURL];
+
   res.redirect("/urls");
 
 });
@@ -290,7 +284,7 @@ app.get("/urls/:shortURL", (req, res) => {
   //check to see if url exist in the user's urls
   //access denied  403 if not found
   if (!urls[shortURL]) {
-    const templateVars = varInit(true, 403, null, null)
+    const templateVars = varInit(true, 403,user,urls)
     res.render("err_page", templateVars);
     return;
   }
@@ -410,7 +404,6 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 
 });
-
 
 app.post("/register", (req, res) => {
   const { name, email, password } = req.body;
